@@ -7,4 +7,5 @@ export interface KpiData {
   icon: LucideIcon;
   iconBgColor: string;
   iconColor: string;
+  borderColor: string;
 }

@@ -1,35 +1,75 @@
+"use client";
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { LayoutGrid, ChevronsLeft } from 'lucide-react';
+import { LayoutGrid, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function Sidebar() {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   return (
-    <div className="flex flex-col w-[280px] bg-white h-screen border-r border-slate-100 relative z-20">
-      <div className="flex items-center h-24 px-8">
-        <h1 className="text-[26px] font-black text-slate-900 tracking-tight flex items-center">
-          HIRE<span className="text-orange-500">SIGHT</span>
-        </h1>
+    <div className={cn(
+      "flex flex-col bg-[#0D0D12] h-screen relative z-20 transition-all duration-300 ease-in-out",
+      isCollapsed ? "w-[68px]" : "w-56"
+    )}>
+      {/* Header */}
+      <div className={cn(
+        "flex items-center h-[68px] border-b border-white/[0.06]",
+        isCollapsed ? "justify-center" : "px-5"
+      )}>
+        {isCollapsed ? (
+          <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center shadow-md">
+            <span className="text-white font-bold text-[15px] tracking-tight">H</span>
+          </div>
+        ) : (
+          <h1 className="text-[18px] font-bold text-white tracking-[-0.03em]">
+            HIRE<span className="text-orange-500">SIGHT</span>
+          </h1>
+        )}
       </div>
-      <nav className="flex-1 py-2">
-        <ul className="px-4">
+
+      {/* Nav */}
+      <nav className="flex-1 py-4 px-2.5">
+        <p className={cn(
+          "text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-3 px-2 transition-opacity duration-200",
+          isCollapsed ? "opacity-0 h-0 mb-0 overflow-hidden" : "opacity-100"
+        )}>Menu</p>
+        <ul className="space-y-0.5">
           <li>
-            <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 text-slate-900 rounded-xl hover:bg-slate-50 transition-colors font-semibold text-sm border border-transparent hover:border-slate-100">
-              <div className="bg-orange-500 rounded-lg p-1.5 flex items-center justify-center shadow-sm">
-                <LayoutGrid className="w-[18px] h-[18px] text-white" />
+            <Link href="/dashboard" className={cn(
+              "flex items-center text-white/90 hover:text-white rounded-[12px] hover:bg-white/[0.07] transition-all duration-200 font-medium text-[14px] tracking-tight",
+              isCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5",
+              "bg-white/[0.10] text-white"
+            )}>
+              <div className="bg-orange-500 rounded-[8px] p-1.5 flex items-center justify-center shrink-0">
+                <LayoutGrid className="w-[15px] h-[15px] text-white" />
               </div>
-              Dashboard
+              {!isCollapsed && <span className="text-[14px] font-semibold">Dashboard</span>}
             </Link>
           </li>
         </ul>
       </nav>
       
-      {/* Bottom Collapse Button */}
-      <div className="p-6 mt-auto flex items-center gap-3 group cursor-pointer">
-        <button className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white shadow-sm group-hover:bg-slate-50 text-slate-600 transition-all">
-          <ChevronsLeft className="w-5 h-5" />
+      {/* Footer Toggle */}
+      <div className={cn(
+        "border-t border-white/[0.06] p-2.5",
+      )}>
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={cn(
+            "flex items-center text-white/30 hover:text-white/70 transition-all duration-200 rounded-[10px] p-2.5 hover:bg-white/[0.06] w-full",
+            isCollapsed ? "justify-center" : "gap-3 px-3"
+          )}
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <PanelLeftOpen className="w-[16px] h-[16px]" />
+          ) : (
+            <PanelLeftClose className="w-[16px] h-[16px]" />
+          )}
+          {!isCollapsed && <span className="text-[12.5px] font-medium">Collapse</span>}
         </button>
-        <div className="bg-slate-900 text-white text-xs font-medium px-3 py-1.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity absolute left-16">
-          Collapse
-        </div>
       </div>
     </div>
   );
