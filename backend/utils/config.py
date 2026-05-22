@@ -88,9 +88,6 @@ JOINED_STATUSES = [
 
 DUPLICATE_STATUSES = [
     "duplicate"
-<<<<<<< HEAD
-]
-=======
 ]
 
 # Recruiter Workflow Stage Columns (canonical normalized names)
@@ -101,5 +98,3 @@ WORKFLOW_STAGE_COLUMNS = [
     "l1 interview",
     "final feedback"
 ]
-
->>>>>>> 9c07f79 (logic fixing of KPI cards : Total Candidates,(Rejected, Candidate Drops & Not Interested),Hold,offered,joined,duplicate profiles,position closed)

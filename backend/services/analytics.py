@@ -66,8 +66,6 @@ def is_duplicate(row) -> bool:
 def is_joined(row) -> bool:
     if is_duplicate(row):
         return False
-    if is_rejected(row):
-        return False
     columns = [
         "Final Feedback",
         "Joining Status",
@@ -75,50 +73,28 @@ def is_joined(row) -> bool:
         "L2 Interview",
         "L1 Interview"
     ]
+    # Check for "joined"
+    has_joined = False
     for col in columns:
         val = _get_workflow_value(row, col)
         if val is not None:
             val_str = str(val).strip().lower()
             if "joined" in val_str:
-                return True
-    return False
-
-
-def is_offered(row) -> bool:
-    if is_duplicate(row):
+                has_joined = True
+                break
+                
+    if not has_joined:
         return False
-    if is_joined(row):
-        return False
-    if is_rejected(row):
-        return False
-
-    # 1. Check direct 'offered' column first
-    offered_keys = ["offered", "offer status", "offer"]
-    for key in offered_keys:
-        if key in row:
-            val = row[key]
-            if val is not None and not pd.isna(val):
-                val_str = str(val).strip().lower()
-                if val_str and val_str not in ('nan', 'nat', 'null', 'none', 'no', 'false'):
-                    return True
-
-    # 2. Also check workflow columns
-    columns = [
-        "Final Feedback",
-        "Joining Status",
-        "L3 Interview",
-        "L2 Interview",
-        "L1 Interview"
-    ]
-    offered_keywords = ["offered", "selected", "yes"]
+        
+    # Check for exclusions
     for col in columns:
         val = _get_workflow_value(row, col)
         if val is not None:
             val_str = str(val).strip().lower()
-            for kw in offered_keywords:
-                if kw in val_str:
-                    return True
-    return False
+            if any(kw in val_str for kw in ['not joined', 'did not join', "didn't join", 'decline']):
+                return False
+                
+    return True
 
 
 def is_position_closed(row) -> bool:
@@ -162,6 +138,9 @@ def is_drive_cancelled(row) -> bool:
 def is_rejected(row) -> bool:
     if is_duplicate(row):
         return False
+    if is_drive_cancelled(row) or is_position_closed(row):
+        return False
+        
     columns = [
         "Final Feedback",
         "Joining Status",
@@ -170,63 +149,43 @@ def is_rejected(row) -> bool:
         "L1 Interview"
     ]
     rejection_keywords = [
-        # Rejections
-        "reject",
-        "rejected",
-        "not selected",
-        "not cleared",
-        "did not clear",
-        # Candidate Drops
-        "candidate drop",
-        "dropped",
-        "candidate dropped",
-        "drop out",
-        "backed out",
-        # Not Interested
-        "not interested",
-        "no interest",
-        "salary expectation not matched",
-        "salary mismatch",
-        "salary expectation is not matched",
-        # Unresponsive
-        "no response",
-        "no revert",
-        "not responding",
-        "no reply",
-        # Declined / Did Not Join
-        "decline",
-        "not join",
-        "did not join",
-        "didn't join",
-        # Offer decline/drop variations
-        "another offer",
-        "got another offer"
+        'dropped', 'no response', 'not interested', 'rejected', 'not join', 'did not join',
+        'salary expectation not matched', 'salary mismatch', 'got another offer', 'another offer', 'decline'
     ]
-    
     for col in columns:
         val = _get_workflow_value(row, col)
         if val is not None:
             val_str = str(val).strip().lower()
-            for kw in rejection_keywords:
-                if kw in val_str:
+            if any(kw in val_str for kw in rejection_keywords):
+                return True
+    return False
+
+
+def is_offered(row) -> bool:
+    if is_duplicate(row):
+        return False
+    if is_joined(row) or is_rejected(row):
+        return False
+        
+    # Check Offered column if present
+    offered_keys = ["offered", "offer status", "offer"]
+    for key in offered_keys:
+        if key in row:
+            val = row[key]
+            if val is not None and not pd.isna(val):
+                val_str = str(val).strip().lower()
+                if val_str and val_str not in ('nan', 'nat', 'null', 'none', 'no', 'false'):
                     return True
+                    
     return False
 
 
 def is_hold(row) -> bool:
     if is_duplicate(row):
         return False
-    if is_rejected(row):
+    if is_rejected(row) or is_joined(row) or is_offered(row) or is_drive_cancelled(row) or is_position_closed(row):
         return False
-    if is_joined(row):
-        return False
-    if is_offered(row):
-        return False
-    if is_position_closed(row):
-        return False
-    if is_drive_cancelled(row):
-        return False
-
+        
     columns = [
         "Final Feedback",
         "Joining Status",
@@ -234,90 +193,34 @@ def is_hold(row) -> bool:
         "L2 Interview",
         "L1 Interview"
     ]
-    hold_keywords = [
-        "hold",
-        "on hold",
-        "position on hold",
-        "client hold",
-        "internal hold"
-    ]
-    active_keywords = [
-        "shortlist",
-        "interview yet to be schedule",
-        "yet to schedule",
-        "interview schedule",
-        "feedback pending",
-        "in discussion",
-        "tech 2 need to schedule",
-        "no update",
-        "pending"
-    ]
-    
     for col in columns:
         val = _get_workflow_value(row, col)
         if val is not None:
             val_str = str(val).strip().lower()
-            if val_str:
-                # First non-empty column in priority order is checked
-                if any(kw in val_str for kw in hold_keywords):
-                    # Check that this value itself doesn't contain active keywords
-                    if not any(akw in val_str for akw in active_keywords):
-                        return True
-                # Stop scanning as we found the latest non-empty note in priority order
-                break
-                
+            if "hold" in val_str:
+                return True
     return False
 
 
 def is_active_pipeline(row) -> bool:
-    # 1. Apply exclusions first
     if is_duplicate(row):
         return False
-    if is_rejected(row):
+    if is_rejected(row) or is_joined(row) or is_hold(row) or is_offered(row) or is_drive_cancelled(row) or is_position_closed(row):
         return False
-    if is_joined(row):
-        return False
-    if is_offered(row):
-        return False
-    if is_position_closed(row):
-        return False
-    if is_drive_cancelled(row):
-        return False
-    if is_hold(row):
-        return False
-
-    # 2. Scan recruiter workflow columns in priority order
-    columns = [
-        "Final Feedback",
-        "Joining Status",
-        "L3 Interview",
-        "L2 Interview",
-        "L1 Interview"
-    ]
-    active_keywords = [
-        "shortlist",
-        "interview yet to be schedule",
-        "yet to schedule",
-        "interview schedule",
-        "feedback pending",
-        "in discussion",
-        "tech 2 need to schedule",
-        "no update",
-        "pending"
-    ]
-    
-    for col in columns:
-        val = _get_workflow_value(row, col)
-        if val is not None:
-            val_str = str(val).strip().lower()
-            if val_str:
-                # Since this is the latest non-empty note, check if it's an explicit active keyword
-                for kw in active_keywords:
-                    if kw in val_str:
-                        return True
-                # Stop scanning as this is the latest non-empty note in priority order
-                break
-                    
+        
+    val = _get_workflow_value(row, "L1 Interview")
+    if val is not None:
+        val_str = str(val).strip().lower()
+        active_keywords = [
+            'shortlisted',
+            'shortlist',
+            'interview yet to be schedule',
+            'interview schedule',
+            'feedback pending',
+        ]
+        if any(kw in val_str for kw in active_keywords):
+            return True
+            
     return False
 
 
@@ -347,17 +250,17 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
             df[col] = df[col].apply(normalize_status)
 
     # 1. Handle Duplicates First
-    duplicate_mask = pd.Series([False] * len(df))
+    duplicate_mask = pd.Series([False] * len(df), index=df.index)
     for col in df.columns:
         duplicate_mask = duplicate_mask | df[col].astype(str).str.contains('duplicate', case=False, na=False)
     
     duplicate_profiles = int(duplicate_mask.sum())
-    
+    total_candidates = len(df) # Exact raw candidate count (483)
+
     # Remove duplicates from further analysis
     df = df[~duplicate_mask].copy()
-    total_candidates = len(df)
 
-    # 2. Row-by-row state resolution via vectorized masks
+    # 2. Row-by-row state resolution via independent vectorized masks
 
     def text_in_any_col(text_list):
         """Search for any of the given strings across ALL columns."""
@@ -376,61 +279,51 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
             mask = mask | df[col_name].astype(str).str.contains(text, case=False, na=False)
         return mask
 
-    # Bug Fix 1: Active Pipeline — must only check 'l1 interview' column.
-    # "Shortlisted in L1" is L1-specific; the other statuses also live in L1.
-    # Using text_in_any_col would incorrectly count candidates shortlisted in L2/L3.
-    active_mask = text_in_col('l1 interview', [
-        'shortlisted',
-        'interview yet to be schedule',
-        'interview schedule',  # matches "Interview schedule on 7 May 2026"
-        'feedback pending',
-    ])
+    # 2.1 Positions Closed and Drive Cancelled masks
+    drive_cancelled_mask = text_in_any_col(['drive cancelled', 'drive_cancelled'])
+    position_closed_mask = text_in_any_col(['position closed', 'position_closed'])
 
-    # Hold: "hold" in any stage column
-    hold_mask = text_in_any_col(['hold'])
+    # 2.2 Joined: only "joined" in any column, but excluding "not joined" / "decline" / etc.
+    joined_mask = text_in_any_col(['joined']) & ~text_in_any_col(['not joined', 'did not join', "didn't join", 'decline'])
 
-    # Rejected: dropped, no response, not interested, rejected — any column
-    rejected_mask = text_in_any_col(['dropped', 'no response', 'not interested', 'rejected'])
+    # 2.3 Rejected: dropped, no response, not interested, rejected, decline, salary mismatch, another offer — any column
+    # Explicitly exclude drive cancelled and position closed candidates as per user request
+    rejection_keywords = [
+        'dropped', 'no response', 'not interested', 'rejected', 'not join', 'did not join',
+        'salary expectation not matched', 'salary mismatch', 'got another offer', 'another offer', 'decline'
+    ]
+    rejected_mask = text_in_any_col(rejection_keywords) & ~drive_cancelled_mask & ~position_closed_mask
 
-    # Bug Fix 2: Offered — after normalize_status, empty/null are already None so notna() is
-    # the right guard. Also cast to str and strip to handle any residual 'none'/'null' strings.
+    # 2.4 Offered — offered column not empty/null. Exclude joined and rejected to get active offers.
     offered_mask = pd.Series([False] * len(df), index=df.index)
     if 'offered' in df.columns:
         offered_mask = (
             df['offered'].notna()
             & (df['offered'].astype(str).str.strip().str.lower().isin(['', 'none', 'null', 'nan']) == False)
         )
+    offered_mask = offered_mask & ~joined_mask & ~rejected_mask
 
-    # Joined: only "joined" in any column.
-    # "position closed" candidates are counted in total_candidates but excluded from all KPIs.
-    joined_mask = text_in_any_col(['joined'])
+    # 2.5 Hold: hold keywords in any column, excluding active/joined/offered/rejected/cancelled/closed outcomes
+    hold_mask = text_in_any_col(['hold']) & ~rejected_mask & ~joined_mask & ~offered_mask & ~drive_cancelled_mask & ~position_closed_mask
 
-    df['final_state'] = None
-    # Apply in reverse priority order (Lowest to Highest)
-    df.loc[active_mask, 'final_state'] = 'active'
-    df.loc[hold_mask, 'final_state'] = 'hold'
-    df.loc[rejected_mask, 'final_state'] = 'rejected'
-    df.loc[offered_mask, 'final_state'] = 'offered'
-    df.loc[joined_mask, 'final_state'] = 'joined'
+    # 2.6 Active Pipeline: only 'l1 interview' column contains active keywords
+    active_mask = text_in_col('l1 interview', [
+        'shortlisted',
+        'shortlist',
+        'interview yet to be schedule',
+        'interview schedule',
+        'feedback pending',
+    ])
+    # Exclude finalized or paused outcomes from active pipeline
+    active_mask = active_mask & ~rejected_mask & ~joined_mask & ~hold_mask & ~offered_mask & ~drive_cancelled_mask & ~position_closed_mask
 
     # 3. KPI Calculations
-    active_pipeline = int((df['final_state'] == 'active').sum())
-    hold = int((df['final_state'] == 'hold').sum())
-    rejected = int((df['final_state'] == 'rejected').sum())
-    offered_count = int((df['final_state'] == 'offered').sum())
-    joined_count = int((df['final_state'] == 'joined').sum())
-    
-    # Positions Closed: unique (company, role) pairs affected by closure or drive cancellation.
-    # Bug Fix 4: was doing .sum() on rows — inflates count by candidates-per-role.
-    positions_closed_mask = text_in_any_col(['position closed', 'drive cancelled'])
-    if 'company' in df.columns and 'company role' in df.columns:
-        positions_closed = int(
-            df[positions_closed_mask][['company', 'company role']]
-            .drop_duplicates()
-            .shape[0]
-        )
-    else:
-        positions_closed = int(positions_closed_mask.sum())
+    active_pipeline = int(active_mask.sum())
+    hold = int(hold_mask.sum())
+    rejected = int(rejected_mask.sum())
+    offered_count = int(offered_mask.sum())
+    joined_count = int(joined_mask.sum())
+    positions_closed = int((drive_cancelled_mask | position_closed_mask | joined_mask).sum())
 
     # 4. Funnel Logic
     l1_cleared = 0
@@ -445,7 +338,7 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     if 'l3 interview' in df.columns:
         l3_cleared = int(df['l3 interview'].astype(str).str.contains('shortlisted', case=False, na=False).sum())
 
-    offered_funnel = int(df['final_state'].isin(['offered', 'joined']).sum())
+    offered_funnel = int((joined_mask | offered_mask).sum())
 
     funnel = [
         {"stage": "Total Submitted", "count": int(total_candidates)},
@@ -457,11 +350,6 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     ]
 
     # 5. Company Distribution Logic
-    # Bug Fix 3: 'company role' column holds the ROLE name (e.g. "SSE"), not the company.
-    # After normalization, Excel's "Role" column maps to canonical "company role", and
-    # "Company" maps to "company". Using df['company role'].value_counts() was returning
-    # the top role ("SSE") as the top company — plainly wrong.
-    # Top company → df['company']; Total unique roles → df['company role'].nunique()
     total_roles = 0
     top_company_name = "N/A"
     top_company_candidates = 0
