@@ -239,6 +239,8 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     # Filter out empty rows or rows without a candidate name
     if "candidate" in df.columns:
         df = df[df["candidate"].notna() & (df["candidate"].astype(str).str.strip() != "")]
+    
+    df_raw = df.copy()
 
     if len(df.columns) == 0:
         raise HTTPException(status_code=400, detail="No readable columns found in the file.")
@@ -327,16 +329,16 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
 
     # 4. Funnel Logic
     l1_cleared = 0
-    if 'l2 interview' in df.columns:
-        l1_cleared = int(df['l2 interview'].notna().sum())
+    if 'l1 interview' in df.columns:
+        l1_cleared = int(df['l1 interview'].astype(str).str.contains('shortlisted|shortlist', case=False, na=False).sum())
         
     l2_cleared = 0
-    if 'l3 interview' in df.columns:
-        l2_cleared = int(df['l3 interview'].notna().sum())
+    if 'l2 interview' in df.columns:
+        l2_cleared = int(df['l2 interview'].astype(str).str.contains('shortlisted|shortlist', case=False, na=False).sum())
         
     l3_cleared = 0
     if 'l3 interview' in df.columns:
-        l3_cleared = int(df['l3 interview'].astype(str).str.contains('shortlisted', case=False, na=False).sum())
+        l3_cleared = int(df['l3 interview'].astype(str).str.contains('shortlisted|shortlist', case=False, na=False).sum())
 
     offered_funnel = int((joined_mask | offered_mask).sum())
 
@@ -353,20 +355,48 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     total_roles = 0
     top_company_name = "N/A"
     top_company_candidates = 0
+    top_companies_list = []
 
     if 'company role' in df.columns:
         total_roles = int(df['company role'].nunique())
 
-    if 'company' in df.columns:
-        company_counts = df['company'].value_counts()
-        if not company_counts.empty:
-            top_company_name = str(company_counts.index[0]).title()
-            top_company_candidates = int(company_counts.iloc[0])
+    source_df = df_raw if 'df_raw' in locals() else df
+
+    if 'company' in source_df.columns:
+        def standardize_co(name):
+            if not isinstance(name, str):
+                return "N/A"
+            name_clean = name.strip()
+            name_lower = name_clean.lower()
+            if name_lower == 'ivp':
+                return 'IVP'
+            if name_lower == 'hcl':
+                return 'HCL'
+            if name_lower == 'jkt':
+                return 'JKT'
+            if name_lower == 'spac':
+                return 'SPAC'
+            if name_lower == 'pkf':
+                return 'PKF'
+            return name_clean.title()
+
+        raw_companies = source_df['company'].dropna().apply(standardize_co)
+        counts = raw_companies.value_counts()
+        if not counts.empty:
+            top_company_name = str(counts.index[0])
+            top_company_candidates = int(counts.iloc[0])
+            
+        for co, count in counts.head(5).items():
+            top_companies_list.append({
+                "company": str(co),
+                "count": int(count)
+            })
 
     company_distribution = {
         "topCompany": top_company_name,
         "totalCandidates": int(total_candidates),
         "totalRoles": int(total_roles),
+        "topCompanies": top_companies_list
     }
 
     return {

@@ -97,37 +97,55 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Company Hiring Distribution */}
+        {/* Top Hiring Companies */}
         <div className="bg-white rounded-2xl border border-slate-200/70 p-6 flex flex-col min-h-[300px]">
           <div className="flex items-start gap-3 mb-6">
             <div className="w-10 h-10 rounded-[10px] bg-violet-50 flex items-center justify-center shrink-0">
               <Building2 className="w-4.5 h-4.5 text-violet-500" strokeWidth={2} />
             </div>
             <div>
-              <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">Company Hiring Distribution</h2>
-              <p className="text-[12px] text-slate-400 font-medium mt-0.5">Key metrics across all client accounts</p>
+              <h2 className="text-[15px] font-bold text-slate-900 tracking-tight uppercase">Top Hiring Companies</h2>
+              <p className="text-[12px] text-slate-400 font-medium mt-0.5">Top 5 client accounts by candidate volume</p>
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center gap-6">
-            {dashboardData ? (
-              <>
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                  <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Top Hiring Company</span>
-                  <span className="text-[20px] font-bold text-slate-900 tracking-tight">{dashboardData.companyDistribution.topCompany}</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Total Candidates</span>
-                    <span className="text-[24px] font-bold text-slate-900 tabular-nums tracking-tight">{dashboardData.companyDistribution.totalCandidates}</span>
-                  </div>
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Total Roles</span>
-                    <span className="text-[24px] font-bold text-slate-900 tabular-nums tracking-tight">{dashboardData.companyDistribution.totalRoles}</span>
-                  </div>
-                </div>
-              </>
+          <div className="flex-1 flex flex-col justify-center">
+            {dashboardData && dashboardData.companyDistribution?.topCompanies ? (
+              <div className="divide-y divide-slate-100 flex flex-col justify-between h-full py-1">
+                {dashboardData.companyDistribution.topCompanies.map((item, index) => {
+                  let rankBgColor = "bg-slate-300";
+                  if (index === 0) rankBgColor = "bg-orange-500";
+                  else if (index === 1) rankBgColor = "bg-slate-800";
+                  else if (index === 2) rankBgColor = "bg-slate-400";
+                  
+                  return (
+                    <div key={item.company} className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0">
+                      <div className="flex items-center gap-4">
+                        {/* Rank Badge */}
+                        <div className={`w-6 h-6 rounded-full ${rankBgColor} text-white flex items-center justify-center text-[12px] font-bold`}>
+                          {index + 1}
+                        </div>
+                        {/* Company Name */}
+                        <span className="text-[14px] font-bold text-slate-900">
+                          {item.company}
+                        </span>
+                      </div>
+                      
+                      {/* Count Block */}
+                      <div className="flex items-center gap-3">
+                        <div className="bg-slate-50 px-3 py-1 rounded-full text-center min-w-[50px] border border-slate-100/80">
+                          <span className="text-[13px] font-extrabold text-slate-900 tabular-nums">
+                            {item.count}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                          Candidates
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center opacity-50 py-8">
                 <AlertCircle className="w-8 h-8 text-slate-400 mb-2" />
