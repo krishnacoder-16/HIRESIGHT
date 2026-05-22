@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: "Premium Recruitment Intelligence",
 };
 
+import { ToastProvider } from "@/contexts/ToastContext";
+import { DashboardProvider } from "@/contexts/DashboardContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,7 +22,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} font-sans h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-[#FAF8F5]">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#FAF8F5]">
+        <ToastProvider>
+          <DashboardProvider>
+            {children}
+          </DashboardProvider>
+        </ToastProvider>
+      </body>
     </html>
   );
 }
