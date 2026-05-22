@@ -18,6 +18,7 @@ COLUMN_MAPPING = {
 STATUS_PRIORITY = {
     # 1. Joined
     "joined": 10,
+    # "position closed" / "position_closed" intentionally unclassified — counted in total only
     
     # 2. Offered
     "offered": 20, "yes": 20, "selected": 20,
@@ -26,7 +27,7 @@ STATUS_PRIORITY = {
     "rejected": 30,
     "candidate_drop": 31, "candidate drop": 31, "dropped": 31,
     "not_interested": 32, "not interested": 32,
-    "position_closed": 33, "position closed": 33,
+    # Bug Fix: removed "position_closed"/"position closed" — moved to tier 1 (joined)
     "drive_cancelled": 34, "drive cancelled": 34,
     "no response": 35,
     
@@ -46,7 +47,7 @@ STATUS_PRIORITY = {
 
 # Status Rules for KPIs
 ACTIVE_STATUSES = [
-    "hold",
+    # Bug Fix 5: removed "hold" — hold is a separate KPI, not an active-pipeline status
     "shortlisted",
     "pending",
     "no update",
@@ -70,10 +71,8 @@ REJECTED_STATUSES = [
     "candidate_drop",
     "candidate drop",
     "no response",
-    "position closed",
-    "position_closed",
-    "drive cancelled",
-    "drive_cancelled"
+    # Bug Fix 6: removed "position closed", "position_closed", "drive cancelled", "drive_cancelled"
+    # Per business logic: "position closed" → JOINED; "drive cancelled" → POSITIONS CLOSED metric only
 ]
 
 OFFERED_STATUSES = [
@@ -83,7 +82,8 @@ OFFERED_STATUSES = [
 ]
 
 JOINED_STATUSES = [
-    "joined"
+    "joined",
+    # "position closed" intentionally excluded — counts in total candidates only, no KPI category
 ]
 
 DUPLICATE_STATUSES = [
