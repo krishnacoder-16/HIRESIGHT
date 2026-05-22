@@ -14,12 +14,46 @@ COLUMN_MAPPING = {
     "recruiter": ["recruiter", "recruiter name", "sourcer"]
 }
 
-# Status Rules
+# Status Priority Mapping (Lower number = Higher Priority)
+STATUS_PRIORITY = {
+    # 1. Joined
+    "joined": 10,
+    
+    # 2. Offered
+    "offered": 20, "yes": 20, "selected": 20,
+    
+    # 3. Rejected / Drop / Not Interested
+    "rejected": 30,
+    "candidate_drop": 31, "candidate drop": 31, "dropped": 31,
+    "not_interested": 32, "not interested": 32,
+    "position_closed": 33, "position closed": 33,
+    "drive_cancelled": 34, "drive cancelled": 34,
+    "no response": 35,
+    
+    # 4. Hold
+    "hold": 40, "client hold": 40, "internal hold": 40,
+    
+    # 5. Pipeline / Active
+    "shortlisted": 50,
+    "in discussion": 51,
+    "pending": 60, 
+    "feedback pending": 60, 
+    "interview yet to be schedule": 60, 
+    "interview scheduled": 60, 
+    "tech 2 need to schedule": 60, 
+    "no update": 60,
+}
+
+# Status Rules for KPIs
 ACTIVE_STATUSES = [
+    "hold",
     "shortlisted",
-    "interview yet to be scheduled",
+    "pending",
+    "no update",
+    "interview yet to be schedule",
     "feedback pending",
-    "interview scheduled"
+    "in discussion",
+    "tech 2 need to schedule"
 ]
 
 HOLD_STATUSES = [
@@ -31,8 +65,15 @@ HOLD_STATUSES = [
 REJECTED_STATUSES = [
     "rejected",
     "not interested",
+    "not_interested",
     "dropped",
-    "no response"
+    "candidate_drop",
+    "candidate drop",
+    "no response",
+    "position closed",
+    "position_closed",
+    "drive cancelled",
+    "drive_cancelled"
 ]
 
 OFFERED_STATUSES = [

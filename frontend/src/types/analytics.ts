@@ -14,15 +14,16 @@ export interface FunnelStage {
   count: number;
 }
 
-export interface TopCompany {
-  company: string;
-  count: number;
+export interface CompanyDistribution {
+  topCompany: string;
+  totalCandidates: number;
+  totalRoles: number;
 }
 
 export interface DashboardData {
   kpis: Kpis;
   funnel: FunnelStage[];
-  topCompanies: TopCompany[];
+  companyDistribution: CompanyDistribution;
   metadata?: {
     filename: string;
     processedRows: number;
