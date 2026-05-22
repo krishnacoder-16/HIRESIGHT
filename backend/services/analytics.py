@@ -5,10 +5,321 @@ from typing import Dict, Any
 from fastapi import HTTPException
 from utils.normalization import normalize_column_name, normalize_status
 from utils.config import (
-    ACTIVE_STATUSES, HOLD_STATUSES, REJECTED_STATUSES, 
+    ACTIVE_STATUSES, HOLD_STATUSES, REJECTED_STATUSES,
     OFFERED_STATUSES, JOINED_STATUSES, DUPLICATE_STATUSES,
-    STATUS_PRIORITY
+    STATUS_PRIORITY, WORKFLOW_STAGE_COLUMNS
 )
+
+
+def _is_string_like_dtype(dtype) -> bool:
+    """Return True for object and StringDtype columns (both hold text data)."""
+    if hasattr(dtype, 'name') and dtype.name == 'object':
+        return True
+    # pandas StringDtype (pandas >= 1.0) has a .name of 'string'
+    if hasattr(dtype, 'name') and dtype.name == 'string':
+        return True
+    # pandas >= 2.0 ArrowDtype for string
+    if hasattr(dtype, 'pyarrow_dtype'):
+        import pyarrow as pa
+        return pa.types.is_string(dtype.pyarrow_dtype) or pa.types.is_large_string(dtype.pyarrow_dtype)
+    return False
+
+
+def _get_workflow_value(row, col: str):
+    # Try exact match first
+    if col in row:
+        val = row[col]
+        if val is not None and not pd.isna(val):
+            return val
+    # Then try normalized
+    norm_col = normalize_column_name(col)
+    if norm_col in row:
+        val = row[norm_col]
+        if val is not None and not pd.isna(val):
+            return val
+    # Try direct lowercase
+    lower_col = col.lower().strip()
+    if lower_col in row:
+        val = row[lower_col]
+        if val is not None and not pd.isna(val):
+            return val
+    return None
+
+
+def is_duplicate(row) -> bool:
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            if "duplicate" in val_str:
+                return True
+    return False
+
+
+def is_joined(row) -> bool:
+    if is_duplicate(row):
+        return False
+    if is_rejected(row):
+        return False
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            if "joined" in val_str:
+                return True
+    return False
+
+
+def is_offered(row) -> bool:
+    if is_duplicate(row):
+        return False
+    if is_joined(row):
+        return False
+    if is_rejected(row):
+        return False
+
+    # 1. Check direct 'offered' column first
+    offered_keys = ["offered", "offer status", "offer"]
+    for key in offered_keys:
+        if key in row:
+            val = row[key]
+            if val is not None and not pd.isna(val):
+                val_str = str(val).strip().lower()
+                if val_str and val_str not in ('nan', 'nat', 'null', 'none', 'no', 'false'):
+                    return True
+
+    # 2. Also check workflow columns
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    offered_keywords = ["offered", "selected", "yes"]
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            for kw in offered_keywords:
+                if kw in val_str:
+                    return True
+    return False
+
+
+def is_position_closed(row) -> bool:
+    if is_duplicate(row):
+        return False
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            if "position closed" in val_str or "position_closed" in val_str:
+                return True
+    return False
+
+
+def is_drive_cancelled(row) -> bool:
+    if is_duplicate(row):
+        return False
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            if "drive cancelled" in val_str or "drive_cancelled" in val_str:
+                return True
+    return False
+
+
+def is_rejected(row) -> bool:
+    if is_duplicate(row):
+        return False
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    rejection_keywords = [
+        # Rejections
+        "reject",
+        "rejected",
+        "not selected",
+        "not cleared",
+        "did not clear",
+        # Candidate Drops
+        "candidate drop",
+        "dropped",
+        "candidate dropped",
+        "drop out",
+        "backed out",
+        # Not Interested
+        "not interested",
+        "no interest",
+        "salary expectation not matched",
+        "salary mismatch",
+        "salary expectation is not matched",
+        # Unresponsive
+        "no response",
+        "no revert",
+        "not responding",
+        "no reply",
+        # Declined / Did Not Join
+        "decline",
+        "not join",
+        "did not join",
+        "didn't join",
+        # Offer decline/drop variations
+        "another offer",
+        "got another offer"
+    ]
+    
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            for kw in rejection_keywords:
+                if kw in val_str:
+                    return True
+    return False
+
+
+def is_hold(row) -> bool:
+    if is_duplicate(row):
+        return False
+    if is_rejected(row):
+        return False
+    if is_joined(row):
+        return False
+    if is_offered(row):
+        return False
+    if is_position_closed(row):
+        return False
+    if is_drive_cancelled(row):
+        return False
+
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    hold_keywords = [
+        "hold",
+        "on hold",
+        "position on hold",
+        "client hold",
+        "internal hold"
+    ]
+    active_keywords = [
+        "shortlist",
+        "interview yet to be schedule",
+        "yet to schedule",
+        "interview schedule",
+        "feedback pending",
+        "in discussion",
+        "tech 2 need to schedule",
+        "no update",
+        "pending"
+    ]
+    
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            if val_str:
+                # First non-empty column in priority order is checked
+                if any(kw in val_str for kw in hold_keywords):
+                    # Check that this value itself doesn't contain active keywords
+                    if not any(akw in val_str for akw in active_keywords):
+                        return True
+                # Stop scanning as we found the latest non-empty note in priority order
+                break
+                
+    return False
+
+
+def is_active_pipeline(row) -> bool:
+    # 1. Apply exclusions first
+    if is_duplicate(row):
+        return False
+    if is_rejected(row):
+        return False
+    if is_joined(row):
+        return False
+    if is_offered(row):
+        return False
+    if is_position_closed(row):
+        return False
+    if is_drive_cancelled(row):
+        return False
+    if is_hold(row):
+        return False
+
+    # 2. Scan recruiter workflow columns in priority order
+    columns = [
+        "Final Feedback",
+        "Joining Status",
+        "L3 Interview",
+        "L2 Interview",
+        "L1 Interview"
+    ]
+    active_keywords = [
+        "shortlist",
+        "interview yet to be schedule",
+        "yet to schedule",
+        "interview schedule",
+        "feedback pending",
+        "in discussion",
+        "tech 2 need to schedule",
+        "no update",
+        "pending"
+    ]
+    
+    for col in columns:
+        val = _get_workflow_value(row, col)
+        if val is not None:
+            val_str = str(val).strip().lower()
+            if val_str:
+                # Since this is the latest non-empty note, check if it's an explicit active keyword
+                for kw in active_keywords:
+                    if kw in val_str:
+                        return True
+                # Stop scanning as this is the latest non-empty note in priority order
+                break
+                    
+    return False
+
 
 def process_excel(file_content: bytes) -> Dict[str, Any]:
     try:
@@ -19,13 +330,20 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     if df.empty:
         raise HTTPException(status_code=400, detail="The uploaded Excel file is empty.")
 
+    # Normalize column names (lowercase, trim, map aliases)
     df.columns = [normalize_column_name(col) for col in df.columns]
+
+    # Filter out empty rows or rows without a candidate name
+    if "candidate" in df.columns:
+        df = df[df["candidate"].notna() & (df["candidate"].astype(str).str.strip() != "")]
 
     if len(df.columns) == 0:
         raise HTTPException(status_code=400, detail="No readable columns found in the file.")
 
+    # Normalize all string-typed cell values (lowercase, trim, null-safe)
+    # Handles both 'object' and pandas StringDtype columns
     for col in df.columns:
-        if df[col].dtype == object:
+        if _is_string_like_dtype(df[col].dtype):
             df[col] = df[col].apply(normalize_status)
 
     # 1. Handle Duplicates First
@@ -160,7 +478,7 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     company_distribution = {
         "topCompany": top_company_name,
         "totalCandidates": int(total_candidates),
-        "totalRoles": int(total_roles)
+        "totalRoles": int(total_roles),
     }
 
     return {
@@ -172,7 +490,7 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
             "offered": int(offered_count),
             "joined": int(joined_count),
             "positionsClosed": int(positions_closed),
-            "duplicateProfiles": int(duplicate_profiles)
+            "duplicateProfiles": int(duplicate_profiles),
         },
         "funnel": funnel,
         "companyDistribution": company_distribution
