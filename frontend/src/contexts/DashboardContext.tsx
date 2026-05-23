@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { DashboardData } from '@/types/analytics';
 
 interface DashboardContextType {
@@ -14,7 +14,32 @@ const DashboardContext = createContext<DashboardContextType | undefined>(undefin
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  useEffect(() => {
+    async function rehydrateState() {
+      try {
+        const res = await fetch("http://localhost:8000/api/analytics");
+        if (res.ok) {
+          const data = await res.json();
+          setDashboardData(data);
+        }
+      } catch (err) {
+        console.error("Failed to rehydrate dashboard state", err);
+      } finally {
+        setIsLoading(false);
+        setHasInitialized(true);
+      }
+    }
+    
+    rehydrateState();
+  }, []);
+
+  if (!hasInitialized) {
+    // Return null to prevent layout flashing while checking if backend has data
+    return null;
+  }
 
   return (
     <DashboardContext.Provider value={{ dashboardData, setDashboardData, isLoading, setIsLoading }}>

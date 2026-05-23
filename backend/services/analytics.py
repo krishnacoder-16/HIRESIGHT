@@ -452,7 +452,7 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     store.state["candidate_dataframe"] = cand_df.copy()
     # =========================================
 
-    return {
+    response_payload = {
         "kpis": {
             "totalCandidates": int(total_candidates),
             "activePipeline": int(active_pipeline),
@@ -466,3 +466,6 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
         "funnel": funnel,
         "companyDistribution": company_distribution
     }
+    
+    store.state["analytics"] = response_payload
+    return response_payload
