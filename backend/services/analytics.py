@@ -399,6 +399,49 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
         "topCompanies": top_companies_list
     }
 
+    # === POPULATE CANDIDATE PIPELINE STORE ===
+    import services.store as store
+    
+    # Store raw dataframe for any future KPI reference
+    store.state["raw_dataframe"] = df_raw.copy()
+
+    # Create candidate_dataframe (deduplicated)
+    cand_df = df_raw.copy()
+    
+    # Safe cleanup function
+    def clean_col_for_dedup(col_series):
+        # convert to string, strip whitespace
+        s = col_series.astype(str).str.strip()
+        # replace common null string representations with empty string
+        s = s.replace({'nan': '', 'None': '', 'null': '', 'NaT': ''})
+        return s
+
+    for col in ['email id', 'phone number', 'candidate']:
+        if col in cand_df.columns:
+            cand_df[col] = clean_col_for_dedup(cand_df[col])
+
+    def dedup_by_col(df_subset, col_name):
+        if col_name not in df_subset.columns:
+            return df_subset
+        # Mask for rows that actually have a value
+        valid_mask = (df_subset[col_name] != '') & df_subset[col_name].notna()
+        df_valid = df_subset[valid_mask].drop_duplicates(subset=[col_name], keep='first')
+        df_missing = df_subset[~valid_mask]
+        return pd.concat([df_valid, df_missing], ignore_index=True)
+        
+    cand_df = dedup_by_col(cand_df, 'email id')
+    cand_df = dedup_by_col(cand_df, 'phone number')
+    cand_df = dedup_by_col(cand_df, 'candidate')
+    
+    # Generate stable string IDs based on index so frontend has a solid key
+    cand_df['id'] = cand_df.index.astype(str)
+    
+    # Handle NaN across whole dataframe for JSON serialization later
+    cand_df = cand_df.fillna('')
+    
+    store.state["candidate_dataframe"] = cand_df.copy()
+    # =========================================
+
     return {
         "kpis": {
             "totalCandidates": int(total_candidates),
