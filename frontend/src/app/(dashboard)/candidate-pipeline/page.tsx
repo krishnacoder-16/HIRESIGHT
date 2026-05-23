@@ -117,7 +117,7 @@ export default function CandidatePipeline() {
   // Render Empty State
   if (error === "No dataset uploaded yet.") {
     return (
-      <div className="flex-1 bg-[#FAFAFA] min-h-screen p-8 lg:p-10 flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="bg-white rounded-2xl border border-slate-200/70 p-12 flex flex-col items-center max-w-md text-center shadow-sm">
           <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-6">
             <FileX2 className="w-8 h-8 text-slate-400" />
@@ -132,8 +132,7 @@ export default function CandidatePipeline() {
   }
 
   return (
-    <div className="flex-1 bg-[#FAFAFA] min-h-screen p-8 lg:p-10 font-inter">
-      <div className="max-w-[1600px] mx-auto space-y-8">
+    <div className="space-y-6 font-inter">
         
         {/* Header section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -302,7 +301,6 @@ export default function CandidatePipeline() {
           )}
         </div>
 
-      </div>
     </div>
   );
 }

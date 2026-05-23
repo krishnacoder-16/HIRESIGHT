@@ -410,28 +410,38 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     
     # Safe cleanup function
     def clean_col_for_dedup(col_series):
-        # convert to string, strip whitespace
-        s = col_series.astype(str).str.strip()
+        # convert to string, strip whitespace, lowercase
+        s = col_series.astype(str).str.strip().str.lower()
         # replace common null string representations with empty string
-        s = s.replace({'nan': '', 'None': '', 'null': '', 'NaT': ''})
+        s = s.replace({'nan': '', 'none': '', 'null': '', 'nat': ''})
         return s
 
-    for col in ['email id', 'phone number', 'candidate']:
-        if col in cand_df.columns:
-            cand_df[col] = clean_col_for_dedup(cand_df[col])
+    # Create temporary normalized columns for deduplication
+    dedup_cols_map = {
+        'email id': '_dedup_email',
+        'phone number': '_dedup_phone',
+        'company': '_dedup_company',
+        'company role': '_dedup_role'
+    }
+    
+    for orig_col, tmp_col in dedup_cols_map.items():
+        if orig_col in cand_df.columns:
+            cand_df[tmp_col] = clean_col_for_dedup(cand_df[orig_col])
+        else:
+            cand_df[tmp_col] = ''
 
-    def dedup_by_col(df_subset, col_name):
-        if col_name not in df_subset.columns:
-            return df_subset
-        # Mask for rows that actually have a value
-        valid_mask = (df_subset[col_name] != '') & df_subset[col_name].notna()
-        df_valid = df_subset[valid_mask].drop_duplicates(subset=[col_name], keep='first')
+    def dedup_by_subset(df_subset, primary_tmp_col):
+        subset_cols = [primary_tmp_col, '_dedup_company', '_dedup_role']
+        valid_mask = (df_subset[primary_tmp_col] != '')
+        df_valid = df_subset[valid_mask].drop_duplicates(subset=subset_cols, keep='first')
         df_missing = df_subset[~valid_mask]
         return pd.concat([df_valid, df_missing], ignore_index=True)
         
-    cand_df = dedup_by_col(cand_df, 'email id')
-    cand_df = dedup_by_col(cand_df, 'phone number')
-    cand_df = dedup_by_col(cand_df, 'candidate')
+    cand_df = dedup_by_subset(cand_df, '_dedup_email')
+    cand_df = dedup_by_subset(cand_df, '_dedup_phone')
+    
+    # Drop temporary columns
+    cand_df = cand_df.drop(columns=list(dedup_cols_map.values()))
     
     # Generate stable string IDs based on index so frontend has a solid key
     cand_df['id'] = cand_df.index.astype(str)
