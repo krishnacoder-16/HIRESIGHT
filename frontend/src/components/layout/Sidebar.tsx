@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, PanelLeftClose, PanelLeftOpen, Users } from 'lucide-react';
+import { LayoutGrid, PanelLeftClose, PanelLeftOpen, Users, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
@@ -60,6 +60,18 @@ export function Sidebar() {
                 <Users className="w-[15px] h-[15px] text-white" />
               </div>
               {!isCollapsed && <span className="text-[14px] font-semibold">Candidate Pipeline</span>}
+            </Link>
+          </li>
+          <li>
+            <Link href="/jobs" className={cn(
+              "flex items-center text-white/60 hover:text-white rounded-[12px] hover:bg-white/[0.07] transition-all duration-200 font-medium text-[14px] tracking-tight",
+              isCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5",
+              pathname === '/jobs' ? "bg-white/[0.10] text-white" : ""
+            )}>
+              <div className={cn("rounded-[8px] p-1.5 flex items-center justify-center shrink-0", pathname === '/jobs' ? "bg-orange-500" : "bg-white/[0.05]")}>
+                <Briefcase className="w-[15px] h-[15px] text-white" />
+              </div>
+              {!isCollapsed && <span className="text-[14px] font-semibold">Jobs</span>}
             </Link>
           </li>
         </ul>

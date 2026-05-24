@@ -450,6 +450,57 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     cand_df = cand_df.fillna('')
     
     store.state["candidate_dataframe"] = cand_df.copy()
+    
+    # === POPULATE JOBS PIPELINE STORE ===
+    import hashlib
+    
+    df['is_active'] = active_mask
+    df['is_hold'] = hold_mask
+    df['is_rejected'] = rejected_mask
+    df['is_joined'] = joined_mask
+    
+    df['company_norm'] = df.get('company', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
+    df['role_norm'] = df.get('company role', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
+    
+    jobs_records = []
+    for (comp, role), group in df.groupby(['company_norm', 'role_norm']):
+        total_cvs = len(group)
+        active_count = int(group['is_active'].sum())
+        joined_count = int(group['is_joined'].sum())
+        rejected_count = int(group['is_rejected'].sum())
+        hold_count = int(group['is_hold'].sum())
+        
+        spoc = "N/A"
+        if 'company spoc' in group.columns:
+            valid_spocs = group['company spoc'].replace({'nan': '', 'none': '', 'null': ''}).dropna()
+            valid_spocs = valid_spocs[valid_spocs.astype(str).str.strip() != '']
+            if len(valid_spocs) > 0:
+                spoc = str(valid_spocs.iloc[0]).title()
+                
+        recruiters_list = []
+        if 'recruiter' in group.columns:
+            valid_recs = group['recruiter'].replace({'nan': '', 'none': '', 'null': ''}).dropna()
+            valid_recs = valid_recs[valid_recs.astype(str).str.strip() != '']
+            raw_rec_list = valid_recs.unique().tolist()
+            recruiters_list = sorted([str(r).title().strip() for r in raw_rec_list if str(r).strip()])
+            
+        job_id = hashlib.md5(f"{comp}-{role}".encode('utf-8')).hexdigest()[:8]
+        
+        jobs_records.append({
+            "id": job_id,
+            "company": comp,
+            "role": role,
+            "companySpoc": spoc,
+            "recruiters": recruiters_list,
+            "recruitersCount": len(recruiters_list),
+            "totalCvs": total_cvs,
+            "activeCandidates": active_count,
+            "rejected": rejected_count,
+            "joined": joined_count
+        })
+        
+    jobs_df = pd.DataFrame(jobs_records)
+    store.state["jobs_dataframe"] = jobs_df
     # =========================================
 
     response_payload = {

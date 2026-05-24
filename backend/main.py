@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import upload, candidates, analytics
+from routes import upload, candidates, analytics, jobs
 
 app = FastAPI(title="HIRESIGHT API")
 
@@ -16,6 +16,7 @@ app.add_middleware(
 app.include_router(upload.router, prefix="/api")
 app.include_router(candidates.router, prefix="/api/candidates")
 app.include_router(analytics.router, prefix="/api/analytics")
+app.include_router(jobs.router, prefix="/api/jobs")
 
 @app.get("/health")
 async def health_check():

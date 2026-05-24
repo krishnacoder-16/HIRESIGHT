@@ -5,5 +5,6 @@ import pandas as pd
 state = {
     "raw_dataframe": None,       # Raw cleaned dataframe for analytics KPIs
     "candidate_dataframe": None, # Deduplicated dataframe for candidate pipeline table
+    "jobs_dataframe": None,      # Aggregated jobs from company+role
     "analytics": None            # Processed analytics JSON payload for rehydration
 }
