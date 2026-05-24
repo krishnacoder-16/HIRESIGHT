@@ -309,14 +309,18 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     # 2.5 Hold: hold keywords in any column, excluding active/joined/offered/rejected/cancelled/closed outcomes
     hold_mask = text_in_any_col(['hold']) & ~rejected_mask & ~joined_mask & ~offered_mask & ~drive_cancelled_mask & ~position_closed_mask
 
-    # 2.6 Active Pipeline: only 'l1 interview' column contains active keywords
+    # 2.6 Active Pipeline: only 'l1 interview' column contains active keywords or status is totally blank
+    status_cols = [c for c in ['l1 interview', 'l2 interview', 'l3 interview', 'final feedback', 'joining status', 'offered'] if c in df.columns]
+    blank_status_mask = df[status_cols].isna().all(axis=1) if status_cols else pd.Series([True] * len(df), index=df.index)
+
     active_mask = text_in_col('l1 interview', [
         'shortlisted',
         'shortlist',
         'interview yet to be schedule',
         'interview schedule',
         'feedback pending',
-    ])
+    ]) | blank_status_mask
+    
     # Exclude finalized or paused outcomes from active pipeline
     active_mask = active_mask & ~rejected_mask & ~joined_mask & ~hold_mask & ~offered_mask & ~drive_cancelled_mask & ~position_closed_mask
 
@@ -326,7 +330,10 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     rejected = int(rejected_mask.sum())
     offered_count = int(offered_mask.sum())
     joined_count = int(joined_mask.sum())
-    positions_closed = int((drive_cancelled_mask | position_closed_mask | joined_mask).sum())
+    df['company_norm'] = df.get('company', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
+    df['role_norm'] = df.get('company role', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
+    closed_mask = drive_cancelled_mask | position_closed_mask | joined_mask
+    positions_closed = int(df[closed_mask].drop_duplicates(subset=['company_norm', 'role_norm']).shape[0]) if closed_mask.any() else 0
 
     # 4. Funnel Logic
     l1_cleared = 0
@@ -460,8 +467,7 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     df['is_rejected'] = rejected_mask
     df['is_joined'] = joined_mask
     
-    df['company_norm'] = df.get('company', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
-    df['role_norm'] = df.get('company role', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
+
     
     jobs_records = []
     for (comp, role), group in df.groupby(['company_norm', 'role_norm']):
