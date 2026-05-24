@@ -288,6 +288,7 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     # 2.2 Joined: only "joined" in any column, but excluding "not joined" / "decline" / etc.
     joined_mask = text_in_any_col(['joined']) & ~text_in_any_col(['not joined', 'did not join', "didn't join", 'decline'])
 
+
     # 2.3 Rejected: dropped, no response, not interested, rejected, decline, salary mismatch, another offer — any column
     # Explicitly exclude drive cancelled and position closed candidates as per user request
     rejection_keywords = [
@@ -465,10 +466,10 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     jobs_records = []
     for (comp, role), group in df.groupby(['company_norm', 'role_norm']):
         total_cvs = len(group)
-        active_count = int(group['is_active'].sum())
-        joined_count = int(group['is_joined'].sum())
-        rejected_count = int(group['is_rejected'].sum())
-        hold_count = int(group['is_hold'].sum())
+        grp_active = int(group['is_active'].sum())
+        grp_joined = int(group['is_joined'].sum())
+        grp_rejected = int(group['is_rejected'].sum())
+        grp_hold = int(group['is_hold'].sum())
         
         spoc = "N/A"
         if 'company spoc' in group.columns:
@@ -494,9 +495,9 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
             "recruiters": recruiters_list,
             "recruitersCount": len(recruiters_list),
             "totalCvs": total_cvs,
-            "activeCandidates": active_count,
-            "rejected": rejected_count,
-            "joined": joined_count
+            "activeCandidates": grp_active,
+            "rejected": grp_rejected,
+            "joined": grp_joined
         })
         
     jobs_df = pd.DataFrame(jobs_records)
