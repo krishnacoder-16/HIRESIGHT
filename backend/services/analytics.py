@@ -466,8 +466,10 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     df['is_hold'] = hold_mask
     df['is_rejected'] = rejected_mask
     df['is_joined'] = joined_mask
+    df['is_offered'] = offered_mask
     
-
+    # Store the fully normalized dataframe with all masks for Reports to derive from
+    store.state["normalized_dataframe"] = df.copy()
     
     jobs_records = []
     for (comp, role), group in df.groupby(['company_norm', 'role_norm']):
