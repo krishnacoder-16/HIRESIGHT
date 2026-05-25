@@ -489,22 +489,34 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
         grp_rejected = int(group['is_rejected'].sum())
         grp_hold = int(group['is_hold'].sum())
         
-        is_open = False
-        if grp_active > 0:
-            is_open = True
+        is_closed = False
+        if grp_joined > 0:
+            is_closed = True
         else:
-            is_closed = False
             closed_keywords = ['closed', 'cancelled', 'drive cancelled', 'position closed']
             for _, row in group.iterrows():
                 for val in row.values:
-                    s_val = str(val).lower()
+                    s_val = str(val).lower().strip()
                     if any(k == s_val or k in s_val for k in closed_keywords):
                         is_closed = True
                         break
                 if is_closed:
                     break
-            if not is_closed:
+
+        is_open = False
+        if not is_closed:
+            if grp_active > 0:
                 is_open = True
+            else:
+                activity_keywords = ['shortlisted', 'l1 cleared', 'l2 cleared', 'selected', 'interview']
+                for _, row in group.iterrows():
+                    for val in row.values:
+                        s_val = str(val).lower().strip()
+                        if any(k in s_val for k in activity_keywords):
+                            is_open = True
+                            break
+                    if is_open:
+                        break
                 
         if is_open:
             open_roles += 1
