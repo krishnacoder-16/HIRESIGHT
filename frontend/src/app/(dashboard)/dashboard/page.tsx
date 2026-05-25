@@ -13,9 +13,9 @@ export default function DashboardPage() {
   };
 
   const kpiData = [
-    { title: 'Open Roles', value: getKpi('openRoles'), subtitle: 'Active hiring requirements and positions', icon: Briefcase, iconBgColor: 'bg-blue-50', iconColor: 'text-blue-500', borderColor: 'bg-blue-400' },
-    { title: 'L1 Shortlisted', value: getKpi('l1Shortlisted'), subtitle: 'Candidates successfully cleared L1 interview stage', icon: UserCheck, iconBgColor: 'bg-amber-50', iconColor: 'text-amber-500', borderColor: 'bg-amber-400' },
-    { title: 'L2 Shortlisted', value: getKpi('l2Shortlisted'), subtitle: 'Candidates successfully cleared L2 interview stage', icon: UserCheck, iconBgColor: 'bg-emerald-50', iconColor: 'text-emerald-500', borderColor: 'bg-emerald-400' },
+    { title: 'Open Roles', value: getKpi('openRoles'), subtitle: 'Active hiring requirements and positions', icon: Briefcase, iconBgColor: 'bg-blue-50', iconColor: 'text-blue-500', borderColor: 'bg-blue-400', href: '/jobs?status=open' },
+    { title: 'L1 Shortlisted', value: getKpi('l1Shortlisted'), subtitle: 'Candidates successfully cleared L1 interview stage', icon: UserCheck, iconBgColor: 'bg-amber-50', iconColor: 'text-amber-500', borderColor: 'bg-amber-400', href: '/reports/l1-shortlisted' },
+    { title: 'L2 Shortlisted', value: getKpi('l2Shortlisted'), subtitle: 'Candidates successfully cleared L2 interview stage', icon: UserCheck, iconBgColor: 'bg-emerald-50', iconColor: 'text-emerald-500', borderColor: 'bg-emerald-400', href: '/reports/l2-shortlisted' },
     { title: 'Offered Candidates', value: getKpi('offered'), subtitle: 'Active job offers extended to candidate pool', icon: Gift, iconBgColor: 'bg-orange-50', iconColor: 'text-orange-500', borderColor: 'bg-orange-400' },
     { title: 'Candidate Joined', value: getKpi('joined'), subtitle: 'Successfully placed and onboarded hires', icon: UserCheck, iconBgColor: 'bg-emerald-50', iconColor: 'text-emerald-500', borderColor: 'bg-emerald-400' },
     { title: 'Positions Closed', value: getKpi('positionsClosed'), subtitle: 'Roles filled internally or drive cancelled', icon: Briefcase, iconBgColor: 'bg-violet-50', iconColor: 'text-violet-500', borderColor: 'bg-violet-400' },

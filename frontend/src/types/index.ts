@@ -8,4 +8,5 @@ export interface KpiData {
   iconBgColor: string;
   iconColor: string;
   borderColor: string;
+  href?: string;
 }

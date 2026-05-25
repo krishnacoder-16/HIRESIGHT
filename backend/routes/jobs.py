@@ -10,6 +10,7 @@ async def list_jobs(
     search: str = Query(None),
     company: str = Query(None),
     recruiter: str = Query(None),
+    status: str = Query(None),
     sort_by: str = Query(None),
     sort_desc: bool = Query(False)
 ):
@@ -19,6 +20,7 @@ async def list_jobs(
         search=search,
         company=company,
         recruiter=recruiter,
+        status=status,
         sort_by=sort_by,
         sort_desc=sort_desc
     )
@@ -28,6 +30,7 @@ async def export_jobs(
     search: str = Query(None),
     company: str = Query(None),
     recruiter: str = Query(None),
+    status: str = Query(None),
     sort_by: str = Query(None),
     sort_desc: bool = Query(False)
 ):
@@ -35,6 +38,7 @@ async def export_jobs(
         search=search,
         company=company,
         recruiter=recruiter,
+        status=status,
         sort_by=sort_by,
         sort_desc=sort_desc
     )

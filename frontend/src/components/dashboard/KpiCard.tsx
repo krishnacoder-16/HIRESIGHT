@@ -1,8 +1,9 @@
+import Link from 'next/link';
 import { KpiData } from '@/types';
 
-export function KpiCard({ title, value, subtitle, icon: Icon, iconBgColor, iconColor, borderColor }: KpiData) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200/70 relative overflow-hidden group hover:shadow-[0_8px_30px_-10px_rgba(0,0,0,0.08)] hover:-translate-y-[2px] transition-all duration-300 cursor-default flex flex-col">
+export function KpiCard({ title, value, subtitle, icon: Icon, iconBgColor, iconColor, borderColor, href }: KpiData) {
+  const CardContent = (
+    <div className={`bg-white rounded-2xl border border-slate-200/70 relative overflow-hidden group transition-all duration-300 flex flex-col h-full ${href ? 'cursor-pointer hover:shadow-md hover:-translate-y-1' : 'cursor-default'}`}>
       {/* Accent Left Border */}
       <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${borderColor} rounded-l-2xl`} />
       
@@ -23,4 +24,14 @@ export function KpiCard({ title, value, subtitle, icon: Icon, iconBgColor, iconC
       </div>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block h-full outline-none">
+        {CardContent}
+      </Link>
+    );
+  }
+
+  return CardContent;
 }

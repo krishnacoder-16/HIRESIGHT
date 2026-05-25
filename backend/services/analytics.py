@@ -535,7 +535,8 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
             "totalCvs": total_cvs,
             "activeCandidates": grp_active,
             "rejected": grp_rejected,
-            "joined": grp_joined
+            "joined": grp_joined,
+            "isOpen": is_open
         })
         
     jobs_df = pd.DataFrame(jobs_records)

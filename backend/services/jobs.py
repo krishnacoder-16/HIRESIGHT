@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 import services.store as store
 
-def get_filtered_jobs_df(search: str = None, company: str = None, recruiter: str = None) -> pd.DataFrame:
+def get_filtered_jobs_df(search: str = None, company: str = None, recruiter: str = None, status: str = None) -> pd.DataFrame:
     df = store.state.get("jobs_dataframe")
     if df is None:
         return None
@@ -30,10 +30,14 @@ def get_filtered_jobs_df(search: str = None, company: str = None, recruiter: str
             return recruiter.lower().strip() in recs
         df = df[df.apply(match_recruiter, axis=1)]
 
+    if status and status.lower() == 'open':
+        if 'isOpen' in df.columns:
+            df = df[df['isOpen'] == True]
+
     return df
 
-def get_paginated_jobs(page: int, page_size: int, search: str = None, company: str = None, recruiter: str = None, sort_by: str = None, sort_desc: bool = False) -> Dict[str, Any]:
-    df = get_filtered_jobs_df(search, company, recruiter)
+def get_paginated_jobs(page: int, page_size: int, search: str = None, company: str = None, recruiter: str = None, status: str = None, sort_by: str = None, sort_desc: bool = False) -> Dict[str, Any]:
+    df = get_filtered_jobs_df(search, company, recruiter, status)
     if df is None:
         raise HTTPException(status_code=404, detail="No dataset uploaded yet.")
 
@@ -90,8 +94,8 @@ def get_paginated_jobs(page: int, page_size: int, search: str = None, company: s
         }
     }
 
-def export_jobs_csv(search: str = None, company: str = None, recruiter: str = None, sort_by: str = None, sort_desc: bool = False):
-    df = get_filtered_jobs_df(search, company, recruiter)
+def export_jobs_csv(search: str = None, company: str = None, recruiter: str = None, status: str = None, sort_by: str = None, sort_desc: bool = False):
+    df = get_filtered_jobs_df(search, company, recruiter, status)
     if df is None or df.empty:
         raise HTTPException(status_code=404, detail="No data available to export.")
 

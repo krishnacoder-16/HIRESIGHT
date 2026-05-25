@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Search, Download, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, FileX2, Users } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { JobResponse, Job } from "@/types/jobs";
 
 export default function JobsPipeline() {
@@ -9,6 +10,9 @@ export default function JobsPipeline() {
   const [error, setError] = useState<string | null>(null);
   
   // Data state
+  const searchParams = useSearchParams();
+  const statusParam = searchParams.get("status") || "";
+
   const [data, setData] = useState<Job[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -43,6 +47,7 @@ export default function JobsPipeline() {
         params.append("sort_by", sortBy);
         params.append("sort_desc", sortDesc.toString());
       }
+      if (statusParam) params.append("status", statusParam);
 
       const res = await fetch(`http://localhost:8000/api/jobs/?${params.toString()}`);
       
@@ -67,7 +72,7 @@ export default function JobsPipeline() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, search, recruiter, company, sortBy, sortDesc]);
+  }, [page, pageSize, search, recruiter, company, sortBy, sortDesc, statusParam]);
 
   useEffect(() => {
     fetchJobs();
@@ -90,6 +95,8 @@ export default function JobsPipeline() {
       params.append("sort_by", sortBy);
       params.append("sort_desc", sortDesc.toString());
     }
+    if (statusParam) params.append("status", statusParam);
+    
     window.open(`http://localhost:8000/api/jobs/export?${params.toString()}`, '_blank');
   };
 

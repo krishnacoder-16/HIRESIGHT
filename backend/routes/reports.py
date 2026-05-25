@@ -3,6 +3,8 @@ from services.reports.closed_positions import get_closed_positions, export_close
 from services.reports.joined_candidates import get_joined_candidates, export_joined_candidates
 from services.reports.rejection_analysis import get_rejection_analysis, export_rejection_analysis
 from services.reports.offer_rollout import get_offer_rollout, export_offer_rollout
+from services.reports.l1_shortlisted import get_l1_shortlisted, export_l1_shortlisted
+from services.reports.l2_shortlisted import get_l2_shortlisted, export_l2_shortlisted
 
 router = APIRouter()
 
@@ -81,3 +83,41 @@ async def api_export_offer_rollout(
     sort_desc: bool = Query(False)
 ):
     return export_offer_rollout(search, sort_by, sort_desc)
+
+# --- L1 Shortlisted ---
+@router.get("/l1-shortlisted")
+async def api_l1_shortlisted(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1, le=100),
+    search: str = Query(None),
+    sort_by: str = Query(None),
+    sort_desc: bool = Query(False)
+):
+    return get_l1_shortlisted(page, page_size, search, sort_by, sort_desc)
+
+@router.get("/l1-shortlisted/export")
+async def api_export_l1_shortlisted(
+    search: str = Query(None),
+    sort_by: str = Query(None),
+    sort_desc: bool = Query(False)
+):
+    return export_l1_shortlisted(search, sort_by, sort_desc)
+
+# --- L2 Shortlisted ---
+@router.get("/l2-shortlisted")
+async def api_l2_shortlisted(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1, le=100),
+    search: str = Query(None),
+    sort_by: str = Query(None),
+    sort_desc: bool = Query(False)
+):
+    return get_l2_shortlisted(page, page_size, search, sort_by, sort_desc)
+
+@router.get("/l2-shortlisted/export")
+async def api_export_l2_shortlisted(
+    search: str = Query(None),
+    sort_by: str = Query(None),
+    sort_desc: bool = Query(False)
+):
+    return export_l2_shortlisted(search, sort_by, sort_desc)
