@@ -55,7 +55,8 @@ def _get_rejection_analysis_df(search: str = None) -> pd.DataFrame:
             "noResponse": no_response,
             "notInterested": not_interested,
             "totalFailed": total_failed,
-            "rejectionPercentage": f"{rejection_percentage}%"
+            "totalCandidates": len(group),
+            "rejectionPercentage": rejection_percentage
         })
         
     out_df = pd.DataFrame(records)
@@ -80,26 +81,28 @@ SORT_MAP = {
     "No Response": "noResponse",
     "Not Interested": "notInterested",
     "Total Failed": "totalFailed",
+    "Total Candidates": "totalCandidates",
     "Rejection %": "rejectionPercentage"
 }
 
 def get_rejection_analysis(page: int, page_size: int, search: str = None, sort_by: str = None, sort_desc: bool = False):
     df = _get_rejection_analysis_df(search)
+    has_dataset = store.state.get("normalized_dataframe") is not None
     if df.empty:
-        return build_report_response([], {"page": page, "pageSize": page_size, "totalRecords": 0, "totalPages": 1})
+        return build_report_response([], {"page": page, "pageSize": page_size, "totalRecords": 0, "totalPages": 1}, meta={"hasDataset": has_dataset})
         
-    numeric_cols = ["rejected", "dropped", "noResponse", "notInterested", "totalFailed"]
+    numeric_cols = ["rejected", "dropped", "noResponse", "notInterested", "totalFailed", "totalCandidates", "rejectionPercentage"]
     df = sort_dataframe(df, sort_by, sort_desc, SORT_MAP, numeric_cols=numeric_cols)
     data, pagination = paginate_dataframe(df, page, page_size)
     
-    return build_report_response(data, pagination)
+    return build_report_response(data, pagination, meta={"hasDataset": True})
 
 def export_rejection_analysis(search: str = None, sort_by: str = None, sort_desc: bool = False):
     df = _get_rejection_analysis_df(search)
     if df.empty:
         df = pd.DataFrame(columns=list(SORT_MAP.values()))
     else:
-        numeric_cols = ["rejected", "dropped", "noResponse", "notInterested", "totalFailed"]
+        numeric_cols = ["rejected", "dropped", "noResponse", "notInterested", "totalFailed", "totalCandidates", "rejectionPercentage"]
         df = sort_dataframe(df, sort_by, sort_desc, SORT_MAP, numeric_cols=numeric_cols)
         
     cols_map = {v: k for k, v in SORT_MAP.items()}

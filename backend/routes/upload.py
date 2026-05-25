@@ -19,7 +19,7 @@ async def upload_file(file: UploadFile = File(...)):
     # Add metadata
     result["metadata"] = {
         "filename": file.filename,
-        "processedRows": result["kpis"]["totalCandidates"],
+        "processedRows": result["companyDistribution"]["totalCandidates"],
         "processedTimestamp": datetime.utcnow().isoformat()
     }
 

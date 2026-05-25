@@ -40,7 +40,8 @@ export interface RejectionAnalysis {
   noResponse: number;
   notInterested: number;
   totalFailed: number;
-  rejectionPercentage: string;
+  totalCandidates: number;
+  rejectionPercentage: number;
 }
 
 export interface OfferRollout {

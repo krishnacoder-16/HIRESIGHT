@@ -12,8 +12,9 @@ export function RejectionAnalysisTab() {
     { key: "dropped", label: "Dropped", sortable: true },
     { key: "noResponse", label: "No Response", sortable: true },
     { key: "notInterested", label: "Not Interested", sortable: true },
+    { key: "totalCandidates", label: "Total Candidates", sortable: true, render: (val) => <span className="text-slate-900 font-bold">{val}</span> },
     { key: "totalFailed", label: "Total Failed", sortable: true, render: (val) => <span className="text-red-500 font-bold">{val}</span> },
-    { key: "rejectionPercentage", label: "Rejection %", sortable: true, render: (val) => <span className="text-orange-500 font-bold">{val}</span> },
+    { key: "rejectionPercentage", label: "Rejection %", sortable: true, render: (val) => <span className="text-orange-500 font-bold">{val}%</span> },
   ];
 
   return <ReportTable<RejectionAnalysis> endpoint="rejection-analysis" columns={columns} />;

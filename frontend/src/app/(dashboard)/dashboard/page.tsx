@@ -9,18 +9,16 @@ export default function DashboardPage() {
 
   // Helper to safely get KPI value
   const getKpi = (key: keyof NonNullable<typeof dashboardData>['kpis']) => {
-    return dashboardData ? dashboardData.kpis[key].toString() : '-';
+    return dashboardData && dashboardData.kpis[key] !== undefined ? dashboardData.kpis[key].toString() : '-';
   };
 
   const kpiData = [
-    { title: 'Total Candidates', value: getKpi('totalCandidates'), subtitle: 'All candidate CV submissions processed in database', icon: Users, iconBgColor: 'bg-slate-100', iconColor: 'text-slate-500', borderColor: 'bg-slate-300' },
-    { title: 'Active Pipeline', value: getKpi('activePipeline'), subtitle: 'Shortlisted & actively progressing through interviews', icon: Activity, iconBgColor: 'bg-blue-50', iconColor: 'text-blue-500', borderColor: 'bg-blue-400' },
-    { title: 'Hold', value: getKpi('hold'), subtitle: 'Operationally paused — client hold, internal hold', icon: PauseCircle, iconBgColor: 'bg-amber-50', iconColor: 'text-amber-500', borderColor: 'bg-amber-400' },
-    { title: 'Rejected, Candidate Drops & Not Interested', value: getKpi('rejected'), subtitle: 'All unsuccessful candidate outcomes', icon: UserX, iconBgColor: 'bg-red-50', iconColor: 'text-red-500', borderColor: 'bg-red-400' },
+    { title: 'Open Roles', value: getKpi('openRoles'), subtitle: 'Active hiring requirements and positions', icon: Briefcase, iconBgColor: 'bg-blue-50', iconColor: 'text-blue-500', borderColor: 'bg-blue-400' },
+    { title: 'L1 Shortlisted', value: getKpi('l1Shortlisted'), subtitle: 'Candidates successfully cleared L1 interview stage', icon: UserCheck, iconBgColor: 'bg-amber-50', iconColor: 'text-amber-500', borderColor: 'bg-amber-400' },
+    { title: 'L2 Shortlisted', value: getKpi('l2Shortlisted'), subtitle: 'Candidates successfully cleared L2 interview stage', icon: UserCheck, iconBgColor: 'bg-emerald-50', iconColor: 'text-emerald-500', borderColor: 'bg-emerald-400' },
     { title: 'Offered Candidates', value: getKpi('offered'), subtitle: 'Active job offers extended to candidate pool', icon: Gift, iconBgColor: 'bg-orange-50', iconColor: 'text-orange-500', borderColor: 'bg-orange-400' },
     { title: 'Candidate Joined', value: getKpi('joined'), subtitle: 'Successfully placed and onboarded hires', icon: UserCheck, iconBgColor: 'bg-emerald-50', iconColor: 'text-emerald-500', borderColor: 'bg-emerald-400' },
     { title: 'Positions Closed', value: getKpi('positionsClosed'), subtitle: 'Roles filled internally or drive cancelled', icon: Briefcase, iconBgColor: 'bg-violet-50', iconColor: 'text-violet-500', borderColor: 'bg-violet-400' },
-    { title: 'Duplicate Profiles', value: getKpi('duplicateProfiles'), subtitle: 'Duplicate CV submissions or already processed profiles', icon: Copy, iconBgColor: 'bg-amber-50', iconColor: 'text-amber-600', borderColor: 'bg-amber-500' },
   ];
 
   // Funnel logic
@@ -63,10 +61,6 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {kpiData.slice(3, 6).map((kpi, i) => <KpiCard key={i + 3} {...kpi} />)}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {kpiData.slice(6, 8).map((kpi, i) => <KpiCard key={i + 6} {...kpi} />)}
       </div>
 
       {/* Analytics Row */}

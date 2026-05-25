@@ -10,7 +10,7 @@ export function JoinedCandidatesTab() {
     { key: "role", label: "Role", sortable: true },
     { key: "companySpoc", label: "Company SPOC", sortable: true },
     { key: "recruiter", label: "Recruiter", sortable: true },
-    { key: "joiningDate", label: "Joining Date", sortable: true, render: (val) => <span className="text-emerald-600 font-medium">{val}</span> },
+    { key: "joiningDate", label: "Joining Date", sortable: true, render: (val) => <span className="text-emerald-600 font-medium">{val ? String(val).split(' ')[0] : 'N/A'}</span> },
   ];
 
   return <ReportTable<JoinedCandidate> endpoint="joined-candidates" columns={columns} />;

@@ -11,10 +11,24 @@ def _get_closed_positions_df(search: str = None) -> pd.DataFrame:
     records = []
     for (comp, role), group in df.groupby(['company_norm', 'role_norm']):
         total_cvs = len(group)
-        grp_active = int(group['is_active'].sum())
         grp_joined = int(group['is_joined'].sum())
         
-        if grp_joined > 0 and grp_active == 0:
+        is_closed = False
+        if grp_joined > 0:
+            is_closed = True
+        else:
+            closed_keywords = ['closed', 'cancelled', 'drive cancelled', 'position closed']
+            for _, row in group.iterrows():
+                for val in row.values:
+                    s_val = str(val).lower()
+                    # Only exact or sub-string match of the status keywords
+                    if any(k == s_val or k in s_val for k in closed_keywords):
+                        is_closed = True
+                        break
+                if is_closed:
+                    break
+        
+        if is_closed:
             spoc = "N/A"
             if 'company spoc' in group.columns:
                 valid_spocs = group['company spoc'].replace({'nan': '', 'none': '', 'null': ''}).dropna()
@@ -79,13 +93,14 @@ SORT_MAP = {
 
 def get_closed_positions(page: int, page_size: int, search: str = None, sort_by: str = None, sort_desc: bool = False):
     df = _get_closed_positions_df(search)
+    has_dataset = store.state.get("normalized_dataframe") is not None
     if df.empty:
-        return build_report_response([], {"page": page, "pageSize": page_size, "totalRecords": 0, "totalPages": 1})
+        return build_report_response([], {"page": page, "pageSize": page_size, "totalRecords": 0, "totalPages": 1}, meta={"hasDataset": has_dataset})
         
     df = sort_dataframe(df, sort_by, sort_desc, SORT_MAP, numeric_cols=['totalCvs', 'joinedCandidates'])
     data, pagination = paginate_dataframe(df, page, page_size)
     
-    return build_report_response(data, pagination)
+    return build_report_response(data, pagination, meta={"hasDataset": True})
 
 def export_closed_positions(search: str = None, sort_by: str = None, sort_desc: bool = False):
     df = _get_closed_positions_df(search)

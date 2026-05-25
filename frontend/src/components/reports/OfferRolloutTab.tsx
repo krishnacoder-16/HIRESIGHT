@@ -14,5 +14,5 @@ export function OfferRolloutTab() {
     { key: "joiningStatus", label: "Joining Status", sortable: true, render: (val) => <span className="text-orange-500 font-medium">{val}</span> },
   ];
 
-  return <ReportTable<OfferRollout> endpoint="offer-rollout" columns={columns} />;
+  return <ReportTable<OfferRollout> endpoint="offer-rollout" columns={columns} emptyMessage="No offer rollout candidates found" />;
 }

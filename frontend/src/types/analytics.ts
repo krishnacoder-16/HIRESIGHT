@@ -1,12 +1,10 @@
 export interface Kpis {
-  totalCandidates: number;
-  activePipeline: number;
-  hold: number;
-  rejected: number;
+  openRoles: number;
+  l1Shortlisted: number;
+  l2Shortlisted: number;
   offered: number;
   joined: number;
   positionsClosed: number;
-  duplicateProfiles: number;
 }
 
 export interface FunnelStage {

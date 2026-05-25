@@ -14,9 +14,10 @@ export interface ColumnDef<T> {
 interface ReportTableProps<T> {
   endpoint: string;
   columns: ColumnDef<T>[];
+  emptyMessage?: string;
 }
 
-export function ReportTable<T>({ endpoint, columns }: ReportTableProps<T>) {
+export function ReportTable<T>({ endpoint, columns, emptyMessage }: ReportTableProps<T>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -54,10 +55,8 @@ export function ReportTable<T>({ endpoint, columns }: ReportTableProps<T>) {
 
       const json: ReportResponse<T> = await res.json();
       
-      // If no data and total pages is 1 but we're on page 1, might be empty state
-      // We rely on the parent or this component to show empty state. 
-      // The API returns 200 OK with empty data per user requirements.
-      if (json.data.length === 0 && !search && page === 1 && json.pagination.totalRecords === 0) {
+      // We rely on the backend to tell us if the dataset actually exists
+      if (json.meta && json.meta.hasDataset === false) {
         setError("empty_dataset");
       } else {
         setData(json.data);
@@ -187,7 +186,7 @@ export function ReportTable<T>({ endpoint, columns }: ReportTableProps<T>) {
               ) : data.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length} className="py-12 text-center text-slate-500 text-[15px]">
-                    No records found matching your filters.
+                    {emptyMessage || "No records found matching your filters."}
                   </td>
                 </tr>
               ) : (

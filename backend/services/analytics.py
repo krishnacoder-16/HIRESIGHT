@@ -325,15 +325,24 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     active_mask = active_mask & ~rejected_mask & ~joined_mask & ~hold_mask & ~offered_mask & ~drive_cancelled_mask & ~position_closed_mask
 
     # 3. KPI Calculations
-    active_pipeline = int(active_mask.sum())
-    hold = int(hold_mask.sum())
-    rejected = int(rejected_mask.sum())
     offered_count = int(offered_mask.sum())
     joined_count = int(joined_mask.sum())
     df['company_norm'] = df.get('company', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
     df['role_norm'] = df.get('company role', pd.Series(['N/A']*len(df))).fillna('N/A').astype(str).str.title()
     closed_mask = drive_cancelled_mask | position_closed_mask | joined_mask
     positions_closed = int(df[closed_mask].drop_duplicates(subset=['company_norm', 'role_norm']).shape[0]) if closed_mask.any() else 0
+    
+    def count_shortlisted(stage_prefix, keywords_regex):
+        target_cols = [c for c in df.columns if stage_prefix in c.lower()]
+        if not target_cols:
+            return 0
+        mask = pd.Series([False] * len(df), index=df.index)
+        for col in target_cols:
+            mask = mask | df[col].astype(str).str.contains(keywords_regex, case=False, na=False)
+        return int(mask.sum())
+        
+    l1_shortlisted = count_shortlisted('l1', 'shortlisted|l1 cleared|selected')
+    l2_shortlisted = count_shortlisted('l2', 'shortlisted|l2 cleared|selected')
 
     # 4. Funnel Logic
     l1_cleared = 0
@@ -471,6 +480,7 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     # Store the fully normalized dataframe with all masks for Reports to derive from
     store.state["normalized_dataframe"] = df.copy()
     
+    open_roles = 0
     jobs_records = []
     for (comp, role), group in df.groupby(['company_norm', 'role_norm']):
         total_cvs = len(group)
@@ -478,6 +488,26 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
         grp_joined = int(group['is_joined'].sum())
         grp_rejected = int(group['is_rejected'].sum())
         grp_hold = int(group['is_hold'].sum())
+        
+        is_open = False
+        if grp_active > 0:
+            is_open = True
+        else:
+            is_closed = False
+            closed_keywords = ['closed', 'cancelled', 'drive cancelled', 'position closed']
+            for _, row in group.iterrows():
+                for val in row.values:
+                    s_val = str(val).lower()
+                    if any(k == s_val or k in s_val for k in closed_keywords):
+                        is_closed = True
+                        break
+                if is_closed:
+                    break
+            if not is_closed:
+                is_open = True
+                
+        if is_open:
+            open_roles += 1
         
         spoc = "N/A"
         if 'company spoc' in group.columns:
@@ -514,14 +544,12 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
 
     response_payload = {
         "kpis": {
-            "totalCandidates": int(total_candidates),
-            "activePipeline": int(active_pipeline),
-            "hold": int(hold),
-            "rejected": int(rejected),
+            "openRoles": int(open_roles),
+            "l1Shortlisted": int(l1_shortlisted),
+            "l2Shortlisted": int(l2_shortlisted),
             "offered": int(offered_count),
             "joined": int(joined_count),
             "positionsClosed": int(positions_closed),
-            "duplicateProfiles": int(duplicate_profiles),
         },
         "funnel": funnel,
         "companyDistribution": company_distribution

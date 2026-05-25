@@ -48,13 +48,14 @@ SORT_MAP = {
 
 def get_offer_rollout(page: int, page_size: int, search: str = None, sort_by: str = None, sort_desc: bool = False):
     df = _get_offer_rollout_df(search)
+    has_dataset = store.state.get("normalized_dataframe") is not None
     if df.empty:
-        return build_report_response([], {"page": page, "pageSize": page_size, "totalRecords": 0, "totalPages": 1})
+        return build_report_response([], {"page": page, "pageSize": page_size, "totalRecords": 0, "totalPages": 1}, meta={"hasDataset": has_dataset})
         
     df = sort_dataframe(df, sort_by, sort_desc, SORT_MAP)
     data, pagination = paginate_dataframe(df, page, page_size)
     
-    return build_report_response(data, pagination)
+    return build_report_response(data, pagination, meta={"hasDataset": True})
 
 def export_offer_rollout(search: str = None, sort_by: str = None, sort_desc: bool = False):
     df = _get_offer_rollout_df(search)
