@@ -15,9 +15,14 @@ interface ReportTableProps<T> {
   endpoint: string;
   columns: ColumnDef<T>[];
   emptyMessage?: string;
+  apiEndpoint?: string;
+  timelineType?: "weekly" | "monthly";
+  selectedMonth?: string;
+  selectedWeek?: string;
+  summaryHeader?: string;
 }
 
-export function ReportTable<T>({ endpoint, columns, emptyMessage }: ReportTableProps<T>) {
+export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, timelineType, selectedMonth, selectedWeek, summaryHeader }: ReportTableProps<T>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -46,8 +51,12 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage }: ReportTableP
         params.append("sort_by", sortBy);
         params.append("sort_desc", sortDesc.toString());
       }
+      if (timelineType) params.append("timeline_type", timelineType);
+      if (selectedMonth) params.append("month", selectedMonth);
+      if (selectedWeek) params.append("week", selectedWeek);
 
-      const res = await fetch(`http://localhost:8000/api/reports/${endpoint}?${params.toString()}`);
+      const base = apiEndpoint || `http://localhost:8000/api/reports`;
+      const res = await fetch(`${base}/${endpoint}?${params.toString()}`);
       
       if (!res.ok) {
         throw new Error("Failed to fetch report data");
@@ -68,7 +77,7 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage }: ReportTableP
     } finally {
       setLoading(false);
     }
-  }, [endpoint, page, pageSize, search, sortBy, sortDesc]);
+  }, [endpoint, page, pageSize, search, sortBy, sortDesc, apiEndpoint, timelineType, selectedMonth, selectedWeek]);
 
   useEffect(() => {
     fetchData();
@@ -89,7 +98,12 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage }: ReportTableP
       params.append("sort_by", sortBy);
       params.append("sort_desc", sortDesc.toString());
     }
-    window.open(`http://localhost:8000/api/reports/${endpoint}/export?${params.toString()}`, '_blank');
+    if (timelineType) params.append("timeline_type", timelineType);
+    if (selectedMonth) params.append("month", selectedMonth);
+    if (selectedWeek) params.append("week", selectedWeek);
+
+    const base = apiEndpoint || `http://localhost:8000/api/reports`;
+    window.open(`${base}/${endpoint}/export?${params.toString()}`, '_blank');
   };
 
   const handleSort = (columnKey: string) => {
@@ -130,6 +144,11 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage }: ReportTableP
 
   return (
     <div className="flex flex-col space-y-4">
+      {summaryHeader && (
+        <div className="text-[15px] font-semibold text-slate-800 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200/70 shadow-sm">
+          {summaryHeader}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="relative w-full sm:w-[350px]">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
