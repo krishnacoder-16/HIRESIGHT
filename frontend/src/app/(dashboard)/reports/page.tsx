@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { ClosedPositionsTab } from "@/components/reports/ClosedPositionsTab";
 import { RejectionAnalysisTab } from "@/components/reports/RejectionAnalysisTab";
+import { RecruiterPerformanceTab } from "@/components/reports/RecruiterPerformanceTab";
 
-type TabId = 'closed-positions' | 'rejection-analysis';
+type TabId = 'closed-positions' | 'rejection-analysis' | 'recruiter-performance';
 
 export default function ReportsPage() {
   const { dashboardData } = useDashboard();
@@ -19,7 +20,8 @@ export default function ReportsPage() {
 
   const tabs = [
     { id: 'closed-positions', label: 'Closed Positions' },
-    { id: 'rejection-analysis', label: 'Rejection Analysis' }
+    { id: 'rejection-analysis', label: 'Rejection Analysis' },
+    { id: 'recruiter-performance', label: 'Recruiter Performance' }
   ];
 
   return (
@@ -64,6 +66,12 @@ export default function ReportsPage() {
         {mountedTabs.has('rejection-analysis') && (
           <div style={{ display: activeTab === 'rejection-analysis' ? 'block' : 'none' }}>
             <RejectionAnalysisTab />
+          </div>
+        )}
+
+        {mountedTabs.has('recruiter-performance') && (
+          <div style={{ display: activeTab === 'recruiter-performance' ? 'block' : 'none' }}>
+            <RecruiterPerformanceTab />
           </div>
         )}
       </div>

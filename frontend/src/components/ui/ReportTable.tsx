@@ -16,13 +16,14 @@ interface ReportTableProps<T> {
   columns: ColumnDef<T>[];
   emptyMessage?: string;
   apiEndpoint?: string;
-  timelineType?: "weekly" | "monthly";
+  timelineType?: "daily" | "weekly" | "monthly";
+  selectedDate?: string;
   selectedMonth?: string;
   selectedWeek?: string;
   summaryHeader?: string;
 }
 
-export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, timelineType, selectedMonth, selectedWeek, summaryHeader }: ReportTableProps<T>) {
+export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, timelineType, selectedDate, selectedMonth, selectedWeek, summaryHeader }: ReportTableProps<T>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -52,6 +53,7 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
         params.append("sort_desc", sortDesc.toString());
       }
       if (timelineType) params.append("timeline_type", timelineType);
+      if (selectedDate) params.append("date", selectedDate);
       if (selectedMonth) params.append("month", selectedMonth);
       if (selectedWeek) params.append("week", selectedWeek);
 
@@ -77,7 +79,7 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
     } finally {
       setLoading(false);
     }
-  }, [endpoint, page, pageSize, search, sortBy, sortDesc, apiEndpoint, timelineType, selectedMonth, selectedWeek]);
+  }, [endpoint, page, pageSize, search, sortBy, sortDesc, apiEndpoint, timelineType, selectedDate, selectedMonth, selectedWeek]);
 
   useEffect(() => {
     fetchData();
@@ -99,6 +101,7 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
       params.append("sort_desc", sortDesc.toString());
     }
     if (timelineType) params.append("timeline_type", timelineType);
+    if (selectedDate) params.append("date", selectedDate);
     if (selectedMonth) params.append("month", selectedMonth);
     if (selectedWeek) params.append("week", selectedWeek);
 
