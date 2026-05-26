@@ -3,11 +3,9 @@
 import { useState } from "react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { ClosedPositionsTab } from "@/components/reports/ClosedPositionsTab";
-import { JoinedCandidatesTab } from "@/components/reports/JoinedCandidatesTab";
 import { RejectionAnalysisTab } from "@/components/reports/RejectionAnalysisTab";
-import { OfferRolloutTab } from "@/components/reports/OfferRolloutTab";
 
-type TabId = 'closed-positions' | 'joined-candidates' | 'rejection-analysis' | 'offer-rollout';
+type TabId = 'closed-positions' | 'rejection-analysis';
 
 export default function ReportsPage() {
   const { dashboardData } = useDashboard();
@@ -21,9 +19,7 @@ export default function ReportsPage() {
 
   const tabs = [
     { id: 'closed-positions', label: 'Closed Positions' },
-    { id: 'joined-candidates', label: 'Joined Candidates' },
-    { id: 'rejection-analysis', label: 'Rejection Analysis' },
-    { id: 'offer-rollout', label: 'Offer Rollout' }
+    { id: 'rejection-analysis', label: 'Rejection Analysis' }
   ];
 
   return (
@@ -38,14 +34,6 @@ export default function ReportsPage() {
           <div className="bg-white rounded-xl border border-slate-200/70 p-4 shadow-sm flex flex-col">
             <span className="text-[13px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Closed Positions</span>
             <span className="text-2xl font-bold text-slate-900">{dashboardData.kpis.positionsClosed}</span>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200/70 p-4 shadow-sm flex flex-col">
-            <span className="text-[13px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Joined Candidates</span>
-            <span className="text-2xl font-bold text-emerald-600">{dashboardData.kpis.joined}</span>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200/70 p-4 shadow-sm flex flex-col">
-            <span className="text-[13px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Pending Offers</span>
-            <span className="text-2xl font-bold text-blue-600">{dashboardData.kpis.offered}</span>
           </div>
         </div>
       )}
@@ -72,22 +60,10 @@ export default function ReportsPage() {
             <ClosedPositionsTab />
           </div>
         )}
-        
-        {mountedTabs.has('joined-candidates') && (
-          <div style={{ display: activeTab === 'joined-candidates' ? 'block' : 'none' }}>
-            <JoinedCandidatesTab />
-          </div>
-        )}
 
         {mountedTabs.has('rejection-analysis') && (
           <div style={{ display: activeTab === 'rejection-analysis' ? 'block' : 'none' }}>
             <RejectionAnalysisTab />
-          </div>
-        )}
-
-        {mountedTabs.has('offer-rollout') && (
-          <div style={{ display: activeTab === 'offer-rollout' ? 'block' : 'none' }}>
-            <OfferRolloutTab />
           </div>
         )}
       </div>
