@@ -1,97 +1,379 @@
-# HIRESIGHT
+# 🚀 HIRESIGHT — Recruitment Analytics & ATS Dashboard
 
-**HIRESIGHT** is a premium, enterprise-grade HR Recruitment Analytics Dashboard. It provides real-time pipeline intelligence by automatically processing raw recruiter sourcing trackers and transforming messy Excel data into clean, actionable insights.
+## 📌 Overview
 
-![HIRESIGHT Dashboard Concept](https://img.shields.io/badge/Status-Active-emerald?style=for-the-badge)
+HIRESIGHT is a modern recruitment analytics and ATS-style dashboard built for internal hiring operations.
 
-## 🚀 Features
+The platform transforms recruiter sourcing tracker Excel sheets into a fully interactive analytics system with:
 
-- **Dynamic Analytics Dashboard:** A sleek, premium Next.js 15 interface designed to feel like top-tier enterprise operations software.
-- **Live Excel Processing:** Upload candidate trackers directly from the dashboard and watch the UI immediately repaint with live metrics—no page refresh required.
-- **Priority-Based State Resolver:** Uses a smart Pandas-powered backend to resolve a candidate's true final state by evaluating outcome columns (e.g., Joined, Rejected) strictly before pipeline stages (e.g., L1 Interview), ensuring absolute KPI accuracy.
-- **Zero-Trust Normalization:** Automatically handles dirty recruiter data (e.g., `"  EMAIL ID "`, `"candidate_drop"`, `"not interested"`) by stripping whitespace, standardizing columns, and mapping countless edge-cases to a clean internal schema.
-- **Key Metrics Tracked:**
-  - Active Pipeline, Holds, and Rejections
-  - Candidates Offered vs. Joined
-  - Duplicate Profile Detection
-  - Positions Closed
-  - Interview Conversion Funnel (Submitted → L1 → L2 → L3 → Offered → Joined)
-  - Company Hiring Distribution
+* KPI dashboards
+* Candidate pipeline management
+* Job tracking
+* Reports & recruiter analytics
+* Hiring timeline tracking
+* Dynamic Excel-based data ingestion
 
-## 🛠️ Technology Stack
+The entire system works from a single uploaded Excel sheet without requiring a database.
 
-### Frontend (Client)
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
-- **Language:** TypeScript
-- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
-- **Icons:** [Lucide React](https://lucide.dev/)
-- **Typography:** Inter Font Family
+---
 
-### Backend (API & Analytics Engine)
-- **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
-- **Language:** Python 3.11+
-- **Data Engine:** [Pandas](https://pandas.pydata.org/)
-- **Excel Parsing:** Openpyxl
-- **Server:** Uvicorn
+# ✨ Core Features
 
-## 📂 Project Structure
+## 📊 Dashboard Analytics
 
-```text
-c:\Hiresight\
-├── frontend/                 # Next.js 15 Frontend
-│   ├── src/app/              # App Router pages and layouts
-│   ├── src/components/       # Reusable UI components (Navbar, Sidebar, KpiCards)
-│   ├── src/contexts/         # Global state (DashboardContext, ToastContext)
-│   └── src/types/            # TypeScript interfaces
-│
-└── backend/                  # FastAPI Backend
-    ├── main.py               # Application entry point
-    ├── routes/               # API endpoints (e.g., /upload)
-    ├── services/             # Core business logic (Pandas processing)
-    └── utils/                # Normalization helpers and configuration rules
-```
+Dynamic recruitment dashboard with:
 
-## ⚙️ Getting Started
+* Open Roles
+* L1 Shortlisted
+* L2 Shortlisted
+* Offered Candidates
+* Candidate Joined
+* Positions Closed
 
-### 1. Start the Backend API
-Navigate to the backend directory, activate your virtual environment, and start the FastAPI server:
+Additional analytics:
+
+* Interview Funnel
+* Top Hiring Companies
+* KPI drill-down navigation
+
+---
+
+## 👥 Candidate Pipeline
+
+Dedicated candidate management module featuring:
+
+* Search & filtering
+* Backend-driven pagination
+* CSV export
+* Deduplication logic
+* Recruiter/company filters
+
+### Candidate Table Columns
+
+* Candidate Name
+* Phone Number
+* Email ID
+* Recruiter Name
+* Company Name
+* Company SPOC
+
+---
+
+## 💼 Jobs Module
+
+ATS-style role tracking system.
+
+### Features
+
+* Open/Closed role tracking
+* Recruiter contribution tracking
+* CV aggregation
+* Joined candidate tracking
+* Search & pagination
+* CSV export
+
+### Job Metrics
+
+* Total CVs
+* Active Candidates
+* Joined Candidates
+* Recruiter Count
+
+---
+
+## 📑 Reports Module
+
+### Closed Positions
+
+Track successfully completed hiring pipelines.
+
+### Rejection Analysis
+
+Analyze:
+
+* Rejected
+* Dropped
+* No Response
+* Not Interested
+
+### Recruiter Performance
+
+Time-based recruiter analytics:
+
+* Daily
+* Weekly
+* Monthly
+
+Metrics:
+
+* Total CVs Sent
+* Joined Candidates
+
+---
+
+## 📅 Hiring Timeline
+
+Historical recruitment activity tracking.
+
+### Tabs
+
+* Joined Candidates
+* Offered Candidates
+
+### Features
+
+* Weekly & Monthly filtering
+* Timeline-based analytics
+* Search
+* CSV export
+* Dynamic date filtering
+
+---
+
+## ⚙️ Settings Module
+
+Lightweight local application preferences.
+
+### Features
+
+* Theme preferences
+* Compact table mode
+* Default pagination size
+* Default landing page
+* Dataset reset
+* Preference persistence via localStorage
+
+---
+
+# 🧠 Smart Excel Processing
+
+HIRESIGHT automatically processes uploaded sourcing tracker Excel files.
+
+## Supported Dynamic Column Matching
+
+Column matching is:
+
+* case-insensitive
+* whitespace-safe
+* normalization-based
+
+Example:
+
+* `L1 Interview`
+* `l1 interview`
+* `L1 Status`
+
+All map automatically.
+
+---
+
+# 📂 Expected Excel Columns
 
 ```bash
-cd backend
-# Activate virtual environment (Windows)
-.\venv\Scripts\activate 
-# Install dependencies if you haven't already
-pip install -r requirements.txt
-# Start the Uvicorn server
-python -m uvicorn main:app --reload --port 8000
+S. no.
+CV date to client
+Recruiter
+Candidate
+Phone number
+Email ID
+Company Role
+Company SPOC
+L1 Interview
+L2 Interview
+L3 Interview
+Final Feedback
+Offered
+Joining Date
+Joining Status
 ```
-*The API will be available at `http://localhost:8000/api`*
 
-### 2. Start the Frontend Application
-In a new terminal window, navigate to the frontend directory:
+---
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+* Next.js 15
+* TypeScript
+* Tailwind CSS
+* React Context API
+* Lucide React Icons
+
+## Backend
+
+* FastAPI
+* Pandas
+* OpenPyXL
+
+---
+
+# 🧩 Architecture
+
+## Frontend Modules
+
+```bash
+dashboard/
+jobs/
+reports/
+candidate-pipeline/
+hiring-timeline/
+settings/
+```
+
+## Backend Modules
+
+```bash
+services/
+routes/
+timeline/
+reports/
+utils/
+```
+
+---
+
+# 📈 Analytics Engine
+
+Built completely using:
+
+* Pandas
+* Dynamic dataframe normalization
+* Aggregation pipelines
+* Status masking
+* Timeline filtering
+* Role derivation logic
+
+---
+
+# 🔍 Deduplication Logic
+
+Candidates are considered duplicate ONLY IF:
+
+* same email OR same phone
+  AND
+* same company
+  AND
+* same role
+
+This preserves:
+
+* multi-role submissions
+* multi-company submissions
+
+while preventing accidental duplicate inflation.
+
+---
+
+# 📤 Export Support
+
+Supported across:
+
+* Reports
+* Candidate Pipeline
+* Hiring Timeline
+* Recruiter Performance
+* Jobs
+
+Export format:
+
+* CSV
+
+---
+
+# 🎨 UI/UX Highlights
+
+* Premium ATS-inspired design
+* Modern SaaS interface
+* Collapsible sidebar
+* Responsive layout
+* Lightweight architecture
+* Fast dashboard rendering
+
+---
+
+# ⚡ Performance Highlights
+
+* Backend-driven pagination
+* Lazy-loaded reports
+* In-memory analytics processing
+* Modular architecture
+* Dynamic filtering
+
+---
+
+# 🚦 Current Status
+
+## Implemented Modules
+
+✅ Dashboard
+✅ Candidate Pipeline
+✅ Jobs Module
+✅ Reports Module
+✅ Hiring Timeline
+✅ Recruiter Performance
+✅ Settings Page
+✅ CSV Export System
+✅ Dynamic Excel Upload Engine
+
+---
+
+# 🔮 Planned Future Features
+
+* Google Sheets integration
+* Cloud deployment
+* Recruiter assignment system
+* Charts & trend analytics
+* Role-based authentication
+* Recruiter personalization
+* Advanced recruiter performance metrics
+* Email automation
+
+---
+
+# ▶️ Local Setup
+
+## Frontend
 
 ```bash
 cd frontend
-# Install dependencies
 npm install
-# Start the Next.js development server
 npm run dev
 ```
-*The dashboard will be available at `http://localhost:3000`*
 
-## 🧠 Core Business Logic (Backend)
+## Backend
 
-HIRESIGHT is built with strict rules regarding candidate data to ensure reporting precision. 
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
 
-The `services/analytics.py` engine maps out candidate rows using a rigid **Status Priority Resolver**:
-1. `Joined` (Highest Priority)
-2. `Offered` / `Selected`
-3. `Rejected` / `Candidate Drop` / `Not Interested` / `Position Closed`
-4. `Hold`
-5. `Active Pipeline Stages` (Shortlisted, Pending, etc.) (Lowest Priority)
+---
 
-This guarantees that if a recruiter accidentally leaves a candidate as "Shortlisted" in round 1, but "Rejected" in Final Feedback, the system will accurately bucket them into Rejections.
+# 📡 Running URLs
 
-## 🤝 Contributing
-Maintain the clean separation of concerns. Do not introduce heavy abstractions (e.g., Redux, unnecessary charting libraries) without explicit architectural approval. Keep the UI premium and the API responses strictly typed.
+Frontend:
+
+```bash
+http://localhost:3000
+```
+
+Backend:
+
+```bash
+http://localhost:8000
+```
+
+---
+
+# 🏢 About HIRESIGHT
+
+HIRESIGHT is designed as an internal recruitment operations platform focused on:
+
+* hiring visibility
+* recruiter productivity
+* ATS workflow analytics
+* operational reporting
+* recruitment intelligence
+
+Built for modern hiring teams using Excel-driven sourcing workflows.

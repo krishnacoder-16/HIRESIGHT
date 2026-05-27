@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { Search, Download, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, FileX2 } from "lucide-react";
 import { CandidateResponse, Candidate } from "@/types/candidates";
 import { useSettings } from "@/contexts/SettingsContext";
 
