@@ -320,7 +320,6 @@ Export format:
 # 🔮 Planned Future Features
 
 * Google Sheets integration
-* Cloud deployment
 * Recruiter assignment system
 * Charts & trend analytics
 * Role-based authentication
@@ -352,13 +351,29 @@ uvicorn main:app --reload
 
 # 📡 Running URLs
 
-Frontend:
+## Live Production URLs
+
+**Frontend (Vercel):**
+```bash
+https://hiresight-pied.vercel.app
+```
+
+**Backend API (Render):**
+```bash
+https://hiresight-backend-pnan.onrender.com
+```
+
+---
+
+## Local Development URLs
+
+**Frontend:**
 
 ```bash
 http://localhost:3000
 ```
 
-Backend:
+**Backend:**
 
 ```bash
 http://localhost:8000
