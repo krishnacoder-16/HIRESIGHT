@@ -67,7 +67,8 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
       if (selectedMonth) params.append("month", selectedMonth);
       if (selectedWeek) params.append("week", selectedWeek);
 
-      const base = apiEndpoint || `http://localhost:8000/api/reports`;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const base = apiEndpoint || `${apiUrl}/reports`;
       const res = await fetch(`${base}/${endpoint}?${params.toString()}`);
       
       if (!res.ok) {
@@ -115,7 +116,8 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
     if (selectedMonth) params.append("month", selectedMonth);
     if (selectedWeek) params.append("week", selectedWeek);
 
-    const base = apiEndpoint || `http://localhost:8000/api/reports`;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const base = apiEndpoint || `${apiUrl}/reports`;
     window.open(`${base}/${endpoint}/export?${params.toString()}`, '_blank');
   };
 

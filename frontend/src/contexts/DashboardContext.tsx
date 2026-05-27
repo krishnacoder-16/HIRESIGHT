@@ -20,7 +20,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function rehydrateState() {
       try {
-        const res = await fetch("http://localhost:8000/api/analytics");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        const res = await fetch(`${apiUrl}/analytics`);
         if (res.ok) {
           const data = await res.json();
           setDashboardData(data);

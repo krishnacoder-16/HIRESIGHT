@@ -18,6 +18,7 @@ interface TimelineCandidate {
 }
 
 export default function HiringTimelinePage() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
   const [timelineType, setTimelineType] = useState<TimelineType>("monthly");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedWeek, setSelectedWeek] = useState("");
@@ -151,7 +152,7 @@ export default function HiringTimelinePage() {
             <ReportTable<TimelineCandidate>
               key={`joined-${timelineType}-${selectedMonth}-${selectedWeek}`}
               endpoint="joined"
-              apiEndpoint="http://localhost:8000/api/timeline"
+              apiEndpoint={`${apiUrl}/timeline`}
               columns={joinedColumns}
               timelineType={timelineType}
               selectedMonth={selectedMonth}
@@ -167,7 +168,7 @@ export default function HiringTimelinePage() {
             <ReportTable<TimelineCandidate>
               key={`offered-${timelineType}-${selectedMonth}-${selectedWeek}`}
               endpoint="offered"
-              apiEndpoint="http://localhost:8000/api/timeline"
+              apiEndpoint={`${apiUrl}/timeline`}
               columns={offeredColumns}
               timelineType={timelineType}
               selectedMonth={selectedMonth}

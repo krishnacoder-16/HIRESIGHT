@@ -54,7 +54,8 @@ export default function CandidatePipeline() {
         params.append("sort_desc", sortDesc.toString());
       }
 
-      const res = await fetch(`http://localhost:8000/api/candidates/?${params.toString()}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const res = await fetch(`${apiUrl}/candidates/?${params.toString()}`);
       
       if (res.status === 404) {
         setError("No dataset uploaded yet.");
@@ -101,7 +102,8 @@ export default function CandidatePipeline() {
       params.append("sort_by", sortBy);
       params.append("sort_desc", sortDesc.toString());
     }
-    window.open(`http://localhost:8000/api/candidates/export?${params.toString()}`, '_blank');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    window.open(`${apiUrl}/candidates/export?${params.toString()}`, '_blank');
   };
 
   const handleSort = (column: string) => {

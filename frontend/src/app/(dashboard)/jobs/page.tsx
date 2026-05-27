@@ -59,7 +59,8 @@ export default function JobsPipeline() {
       }
       if (statusParam) params.append("status", statusParam);
 
-      const res = await fetch(`http://localhost:8000/api/jobs/?${params.toString()}`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const res = await fetch(`${apiUrl}/jobs/?${params.toString()}`);
       
       if (res.status === 404) {
         setError("No dataset uploaded yet.");
@@ -107,7 +108,8 @@ export default function JobsPipeline() {
     }
     if (statusParam) params.append("status", statusParam);
     
-    window.open(`http://localhost:8000/api/jobs/export?${params.toString()}`, '_blank');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    window.open(`${apiUrl}/jobs/export?${params.toString()}`, '_blank');
   };
 
   const handleSort = (column: string) => {
