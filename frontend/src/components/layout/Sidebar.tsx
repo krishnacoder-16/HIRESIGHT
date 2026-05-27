@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, PanelLeftClose, PanelLeftOpen, Users, Briefcase, FileText, History } from 'lucide-react';
+import { LayoutGrid, PanelLeftClose, PanelLeftOpen, Users, Briefcase, FileText, History, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
@@ -103,8 +103,19 @@ export function Sidebar() {
       
       {/* Footer Toggle */}
       <div className={cn(
-        "border-t border-white/[0.06] p-2.5",
+        "border-t border-white/[0.06] p-2.5 flex flex-col gap-1",
       )}>
+        <Link href="/settings" className={cn(
+          "flex items-center text-white/40 hover:text-white rounded-[10px] hover:bg-white/[0.07] transition-all duration-200 font-medium text-[13px] tracking-tight p-2.5",
+          isCollapsed ? "justify-center" : "gap-3 px-3",
+          pathname === '/settings' ? "bg-white/[0.10] text-white" : ""
+        )}
+        title={isCollapsed ? "Settings" : undefined}
+        >
+          <Settings className="w-[16px] h-[16px]" />
+          {!isCollapsed && <span>Settings</span>}
+        </Link>
+
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={cn(

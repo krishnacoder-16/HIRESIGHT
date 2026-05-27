@@ -3,7 +3,7 @@ import services.store as store
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("")
 async def get_analytics():
     analytics_data = store.state.get("analytics")
     if analytics_data is None:

@@ -3,7 +3,7 @@ from services.jobs import get_paginated_jobs, export_jobs_csv
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("")
 async def list_jobs(
     page: int = Query(1, ge=1),
     page_size: int = Query(25, ge=1, le=100),

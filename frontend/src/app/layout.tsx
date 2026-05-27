@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 import { ToastProvider } from "@/contexts/ToastContext";
 import { DashboardProvider } from "@/contexts/DashboardContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 
 export default function RootLayout({
   children,
@@ -23,11 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} font-sans h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col bg-[#FAF8F5]">
-        <ToastProvider>
-          <DashboardProvider>
-            {children}
-          </DashboardProvider>
-        </ToastProvider>
+        <SettingsProvider>
+          <ToastProvider>
+            <DashboardProvider>
+              {children}
+            </DashboardProvider>
+          </ToastProvider>
+        </SettingsProvider>
       </body>
     </html>
   );

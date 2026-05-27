@@ -25,6 +25,12 @@ async def upload_file(file: UploadFile = File(...)):
 
     return result
 
+@router.delete("/dataset")
+async def clear_dataset():
+    from services.store import state
+    state.clear()
+    return {"message": "Dataset cleared successfully"}
+
 @router.get("/debug-open-roles")
 def debug_open_roles():
     from services.store import state

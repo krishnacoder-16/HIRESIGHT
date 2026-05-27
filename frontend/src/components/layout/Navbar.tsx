@@ -81,9 +81,11 @@ export function Navbar() {
           )}
           {isLoading ? 'Processing...' : 'Upload Different Dataset'}
         </button>
-        <div className="flex items-center gap-2 cursor-pointer text-slate-500 hover:text-slate-900 transition-colors px-1.5 py-1 rounded-full hover:bg-black/5">
+        <div className="flex items-center gap-2 cursor-pointer text-slate-500 hover:text-slate-900 transition-colors px-1.5 py-1 rounded-full hover:bg-black/5" title="User">
           <div className="w-8 h-8 rounded-full bg-orange-100 border-2 border-orange-200 flex items-center justify-center shadow-sm">
-            <span className="text-orange-600 font-bold text-[13px]">N</span>
+            <span className="text-orange-600 font-bold text-[13px]">
+              N
+            </span>
           </div>
         </div>
       </div>

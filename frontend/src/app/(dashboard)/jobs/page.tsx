@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Search, Download, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, FileX2, Users } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { JobResponse, Job } from "@/types/jobs";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function JobsPipeline() {
   const [loading, setLoading] = useState(true);
@@ -22,8 +23,17 @@ export default function JobsPipeline() {
   const [companyOptions, setCompanyOptions] = useState<string[]>([]);
 
   // Query state
+  const { defaultRowsPerPage, isLoaded, compactTables } = useSettings();
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(defaultRowsPerPage);
+  const [hasInitSize, setHasInitSize] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded && !hasInitSize) {
+      setPageSize(defaultRowsPerPage);
+      setHasInitSize(true);
+    }
+  }, [isLoaded, defaultRowsPerPage, hasInitSize]);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState(""); 
   const [recruiter, setRecruiter] = useState("");
@@ -197,30 +207,30 @@ export default function JobsPipeline() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>
                   <button onClick={() => handleSort("Company")} className="flex items-center hover:text-slate-800 transition-colors group">
                     Company {renderSortIcon("Company")}
                   </button>
                 </th>
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>
                   <button onClick={() => handleSort("Role")} className="flex items-center hover:text-slate-800 transition-colors group">
                     Role {renderSortIcon("Role")}
                   </button>
                 </th>
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">Company SPOC</th>
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">Recruiters</th>
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>Company SPOC</th>
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>Recruiters</th>
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>
                   <button onClick={() => handleSort("Total CVs")} className="flex items-center hover:text-slate-800 transition-colors group">
                     Total CVs {renderSortIcon("Total CVs")}
                   </button>
                 </th>
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>
                   <button onClick={() => handleSort("Active Candidates")} className="flex items-center hover:text-slate-800 transition-colors group">
                     Active {renderSortIcon("Active Candidates")}
                   </button>
                 </th>
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">Rejected</th>
-                <th className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>Rejected</th>
+                <th className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>
                   <button onClick={() => handleSort("Joined")} className="flex items-center hover:text-slate-800 transition-colors group">
                     Joined {renderSortIcon("Joined")}
                   </button>
@@ -232,7 +242,7 @@ export default function JobsPipeline() {
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`skel-${idx}`}>
                     {Array.from({ length: 8 }).map((_, colIdx) => (
-                      <td key={`skel-col-${colIdx}`} className="py-4 px-6">
+                      <td key={`skel-col-${colIdx}`} className={`${compactTables ? 'py-3' : 'py-4'} px-6`}>
                         <div className="h-4 bg-slate-100 rounded animate-pulse w-3/4"></div>
                       </td>
                     ))}
@@ -247,18 +257,18 @@ export default function JobsPipeline() {
               ) : (
                 data.map((job) => (
                   <tr key={job.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="py-4 px-6 text-[14px] font-medium text-slate-900">{job.company}</td>
-                    <td className="py-4 px-6 text-[14px] text-slate-600 font-medium max-w-[200px] truncate" title={job.role}>{job.role}</td>
-                    <td className="py-4 px-6 text-[14px] text-slate-600">{job.companySpoc}</td>
-                    <td className="py-4 px-6 text-[14px] text-slate-600">
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] font-medium text-slate-900`}>{job.company}</td>
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-slate-600 font-medium max-w-[200px] truncate`} title={job.role}>{job.role}</td>
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-slate-600`}>{job.companySpoc}</td>
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-slate-600`}>
                       <div className="max-w-[200px] truncate" title={job.recruiters.join(", ")}>
                         {job.recruiters.join(", ")}
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-[14px] text-slate-900 font-bold">{job.totalCvs}</td>
-                    <td className="py-4 px-6 text-[14px] text-blue-600 font-bold">{job.activeCandidates}</td>
-                    <td className="py-4 px-6 text-[14px] text-red-500 font-bold">{job.rejected}</td>
-                    <td className="py-4 px-6 text-[14px] text-emerald-600 font-bold">{job.joined}</td>
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-slate-900 font-bold`}>{job.totalCvs}</td>
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-blue-600 font-bold`}>{job.activeCandidates}</td>
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-red-500 font-bold`}>{job.rejected}</td>
+                    <td className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-emerald-600 font-bold`}>{job.joined}</td>
                   </tr>
                 ))
               )}

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Search, Download, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, FileX2 } from "lucide-react";
 import { ReportResponse } from "@/types/reports";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export interface ColumnDef<T> {
   key: keyof T;
@@ -31,8 +32,17 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
   const [totalPages, setTotalPages] = useState(0);
   const [totalRecords, setTotalRecords] = useState(0);
   
+  const { defaultRowsPerPage, isLoaded, compactTables } = useSettings();
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(defaultRowsPerPage);
+  const [hasInitSize, setHasInitSize] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded && !hasInitSize) {
+      setPageSize(defaultRowsPerPage);
+      setHasInitSize(true);
+    }
+  }, [isLoaded, defaultRowsPerPage, hasInitSize]);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState("");
@@ -182,7 +192,7 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
                 {columns.map((col) => (
-                  <th key={String(col.key)} className="py-4 px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th key={String(col.key)} className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[13px] font-semibold text-slate-500 uppercase tracking-wider`}>
                     {col.sortable ? (
                       <button onClick={() => handleSort(String(col.label))} className="flex items-center hover:text-slate-800 transition-colors group whitespace-nowrap">
                         {col.label} {renderSortIcon(String(col.label), true)}
@@ -199,7 +209,7 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
                 Array.from({ length: 5 }).map((_, idx) => (
                   <tr key={`skel-${idx}`}>
                     {columns.map((_, colIdx) => (
-                      <td key={`skel-col-${colIdx}`} className="py-4 px-6">
+                      <td key={`skel-col-${colIdx}`} className={`${compactTables ? 'py-3' : 'py-4'} px-6`}>
                         <div className="h-4 bg-slate-100 rounded animate-pulse w-3/4"></div>
                       </td>
                     ))}
@@ -215,7 +225,7 @@ export function ReportTable<T>({ endpoint, columns, emptyMessage, apiEndpoint, t
                 data.map((row, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
                     {columns.map((col) => (
-                      <td key={String(col.key)} className="py-4 px-6 text-[14px] text-slate-600 font-medium max-w-[250px] truncate" title={String(row[col.key])}>
+                      <td key={String(col.key)} className={`${compactTables ? 'py-3' : 'py-4'} px-6 text-[14px] text-slate-600 font-medium max-w-[250px] truncate`} title={String(row[col.key])}>
                         {col.render ? col.render(row[col.key], row) : String(row[col.key])}
                       </td>
                     ))}
