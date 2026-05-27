@@ -9,8 +9,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://YOUR_VERCEL_APP.vercel.app"
+        "https://hiresight-pied.vercel.app"
     ],
+    allow_origin_regex=r"https://hiresight.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
