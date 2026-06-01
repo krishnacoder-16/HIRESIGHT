@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Query
 from services.reports.closed_positions import get_closed_positions, export_closed_positions
+from services.reports.internal_closures import get_internal_closures, export_internal_closures
+from services.reports.summary import get_reports_summary
 from services.reports.rejection_analysis import get_rejection_analysis, export_rejection_analysis
 from services.reports.l1_shortlisted import get_l1_shortlisted, export_l1_shortlisted
 from services.reports.l2_shortlisted import get_l2_shortlisted, export_l2_shortlisted
@@ -25,6 +27,32 @@ async def api_export_closed_positions(
     sort_desc: bool = Query(False)
 ):
     return export_closed_positions(search, sort_by, sort_desc)
+
+
+# --- Closed by Client / Internal Closures ---
+@router.get("/internal-closures")
+async def api_internal_closures(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1, le=100),
+    search: str = Query(None),
+    sort_by: str = Query(None),
+    sort_desc: bool = Query(False)
+):
+    return get_internal_closures(page, page_size, search, sort_by, sort_desc)
+
+@router.get("/internal-closures/export")
+async def api_export_internal_closures(
+    search: str = Query(None),
+    sort_by: str = Query(None),
+    sort_desc: bool = Query(False)
+):
+    return export_internal_closures(search, sort_by, sort_desc)
+
+
+# --- Reports Summary Counts ---
+@router.get("/summary")
+async def api_reports_summary():
+    return get_reports_summary()
 
 
 # --- Rejection Analysis ---

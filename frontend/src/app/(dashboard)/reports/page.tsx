@@ -1,17 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { ClosedPositionsTab } from "@/components/reports/ClosedPositionsTab";
+import { InternalClosuresTab } from "@/components/reports/InternalClosuresTab";
 import { RejectionAnalysisTab } from "@/components/reports/RejectionAnalysisTab";
 import { RecruiterPerformanceTab } from "@/components/reports/RecruiterPerformanceTab";
 
-type TabId = 'closed-positions' | 'rejection-analysis' | 'recruiter-performance';
+type TabId = 'closed-positions' | 'internal-closures' | 'rejection-analysis' | 'recruiter-performance';
 
 export default function ReportsPage() {
   const { dashboardData } = useDashboard();
   const [activeTab, setActiveTab] = useState<TabId>('closed-positions');
   const [mountedTabs, setMountedTabs] = useState<Set<TabId>>(new Set(['closed-positions']));
+  const [summaryCounts, setSummaryCounts] = useState<{
+    closedPositionsCount: number;
+    internalClosuresCount: number;
+    hasDataset: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    async function fetchSummary() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        const res = await fetch(`${apiUrl}/reports/summary`);
+        if (res.ok) {
+          const data = await res.json();
+          setSummaryCounts(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch reports summary counts", err);
+      }
+    }
+    fetchSummary();
+  }, [dashboardData]);
 
   const handleTabChange = (tabId: TabId) => {
     setActiveTab(tabId);
@@ -20,6 +42,7 @@ export default function ReportsPage() {
 
   const tabs = [
     { id: 'closed-positions', label: 'Closed Positions' },
+    { id: 'internal-closures', label: 'Closed by Client / Internal Closure' },
     { id: 'rejection-analysis', label: 'Rejection Analysis' },
     { id: 'recruiter-performance', label: 'Recruiter Performance' }
   ];
@@ -32,10 +55,18 @@ export default function ReportsPage() {
       </div>
 
       {dashboardData && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white rounded-xl border border-slate-200/70 p-4 shadow-sm flex flex-col">
-            <span className="text-[13px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Closed Positions</span>
-            <span className="text-2xl font-bold text-slate-900">{dashboardData.kpis.positionsClosed}</span>
+            <span className="text-[13px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Closed Positions (Filled by Candidate)</span>
+            <span className="text-2xl font-bold text-slate-900">
+              {summaryCounts ? summaryCounts.closedPositionsCount : "-"}
+            </span>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200/70 p-4 shadow-sm flex flex-col">
+            <span className="text-[13px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Closed by Client / Internal Closure</span>
+            <span className="text-2xl font-bold text-slate-900">
+              {summaryCounts ? summaryCounts.internalClosuresCount : "-"}
+            </span>
           </div>
         </div>
       )}
@@ -60,6 +91,12 @@ export default function ReportsPage() {
         {mountedTabs.has('closed-positions') && (
           <div style={{ display: activeTab === 'closed-positions' ? 'block' : 'none' }}>
             <ClosedPositionsTab />
+          </div>
+        )}
+
+        {mountedTabs.has('internal-closures') && (
+          <div style={{ display: activeTab === 'internal-closures' ? 'block' : 'none' }}>
+            <InternalClosuresTab />
           </div>
         )}
 

@@ -53,3 +53,12 @@ export interface OfferRollout {
   offerStatus: string;
   joiningStatus: string;
 }
+
+export interface InternalClosure {
+  company: string;
+  role: string;
+  companySpoc: string;
+  recruiters: string[];
+  totalCvs: number;
+  closureReason: string;
+}

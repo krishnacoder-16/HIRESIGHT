@@ -13,22 +13,8 @@ def _get_closed_positions_df(search: str = None) -> pd.DataFrame:
         total_cvs = len(group)
         grp_joined = int(group['is_joined'].sum())
         
-        is_closed = False
+        # A position belongs here ONLY IF Joined Candidates > 0
         if grp_joined > 0:
-            is_closed = True
-        else:
-            closed_keywords = ['closed', 'cancelled', 'drive cancelled', 'position closed']
-            for _, row in group.iterrows():
-                for val in row.values:
-                    s_val = str(val).lower()
-                    # Only exact or sub-string match of the status keywords
-                    if any(k == s_val or k in s_val for k in closed_keywords):
-                        is_closed = True
-                        break
-                if is_closed:
-                    break
-        
-        if is_closed:
             spoc = "N/A"
             if 'company spoc' in group.columns:
                 valid_spocs = group['company spoc'].replace({'nan': '', 'none': '', 'null': ''}).dropna()
