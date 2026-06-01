@@ -240,6 +240,39 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     if "candidate" in df.columns:
         df = df[df["candidate"].notna() & (df["candidate"].astype(str).str.strip() != "")]
     
+    # Drop rows that are template/instruction headers or have no company/role information
+    junk_keywords = {
+        "contact number", "email id", "emailid", "candidate name", "recruiter name", 
+        "company role", "phone number", "company name", "joining status", "final feedback",
+        "l1 interview", "l2 interview", "l3 interview", "s.no", "s. no."
+    }
+    
+    def is_junk_row(row):
+        # 1. Check if candidate name is a dummy placeholder or matches header labels
+        candidate_val = str(row.get("candidate", "")).strip().lower()
+        if candidate_val in {"", "nan", "none", "null", "n/a", "candidate name", "candidate", "name"}:
+            return True
+            
+        # 2. Check if company or role contains junk/header placeholders
+        comp_val = str(row.get("company", "")).strip().lower()
+        role_val = str(row.get("company role", "")).strip().lower()
+        
+        # If both are empty or N/A, it's an unassigned junk row
+        if (comp_val in {"", "nan", "none", "null", "n/a", "nat"} and 
+            role_val in {"", "nan", "none", "null", "n/a", "nat"}):
+            return True
+            
+        # If any of the columns contain header keywords (meaning it's an instructions or split header row)
+        if any(kw in comp_val for kw in junk_keywords) or any(kw in role_val for kw in junk_keywords):
+            return True
+            
+        if any(kw in candidate_val for kw in {"contact number", "email id", "phone number"}):
+            return True
+            
+        return False
+
+    df = df[~df.apply(is_junk_row, axis=1)]
+
     df_raw = df.copy()
 
     if len(df.columns) == 0:
