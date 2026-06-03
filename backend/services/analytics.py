@@ -250,16 +250,32 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     def is_junk_row(row):
         # 1. Check if candidate name is a dummy placeholder or matches header labels
         candidate_val = str(row.get("candidate", "")).strip().lower()
-        if candidate_val in {"", "nan", "none", "null", "n/a", "candidate name", "candidate", "name"}:
+        if candidate_val in {"", "nan", "none", "null", "n/a", "candidate name", "candidate", "name", "date", "dob", "s.no", "s. no."}:
             return True
             
         # 2. Check if company or role contains junk/header placeholders
         comp_val = str(row.get("company", "")).strip().lower()
         role_val = str(row.get("company role", "")).strip().lower()
+        rec_val = str(row.get("recruiter", "")).strip().lower()
+        phone_val = str(row.get("phone number", "")).strip().lower()
+        email_val = str(row.get("email id", "")).strip().lower()
         
-        # If both are empty or N/A, it's an unassigned junk row
-        if (comp_val in {"", "nan", "none", "null", "n/a", "nat"} and 
-            role_val in {"", "nan", "none", "null", "n/a", "nat"}):
+        is_comp_empty = comp_val in {"", "nan", "none", "null", "n/a", "nat"}
+        is_role_empty = role_val in {"", "nan", "none", "null", "n/a", "nat"}
+        is_rec_empty = rec_val in {"", "nan", "none", "null", "n/a", "nat"}
+        is_phone_empty = phone_val in {"", "nan", "none", "null", "n/a", "nat"}
+        is_email_empty = email_val in {"", "nan", "none", "null", "n/a", "nat"}
+
+        # If company and role are both empty/NA, it's an unassigned junk row
+        if is_comp_empty and is_role_empty:
+            return True
+            
+        # If it's a secondary table header row
+        if phone_val in {"name", "candidate name", "candidate"} or email_val in {"contact", "phone number", "phone"}:
+            return True
+            
+        # If there is no recruiter, no company, and no contact info
+        if is_rec_empty and is_comp_empty and is_phone_empty and is_email_empty:
             return True
             
         # If any of the columns contain header keywords (meaning it's an instructions or split header row)
@@ -460,8 +476,8 @@ def process_excel(file_content: bytes) -> Dict[str, Any]:
     
     # Safe cleanup function
     def clean_col_for_dedup(col_series):
-        # convert to string, strip whitespace, lowercase
-        s = col_series.astype(str).str.strip().str.lower()
+        # convert to string, strip whitespace, lowercase, handle nan safely
+        s = col_series.fillna('').astype(str).str.strip().str.lower()
         # replace common null string representations with empty string
         s = s.replace({'nan': '', 'none': '', 'null': '', 'nat': ''})
         return s
